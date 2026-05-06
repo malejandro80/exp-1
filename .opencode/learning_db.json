@@ -1,0 +1,228 @@
+{
+  "entries": [
+    {
+      "id": "L-001",
+      "date": "2026-05-21",
+      "agent": "all",
+      "issue": "La tabla profiles tenía FK constraint a auth.users que no existe en proyectos sin autenticación",
+      "fix": "ALTER TABLE profiles DROP CONSTRAINT profiles_id_fkey",
+      "rule": "Antes de asumir que la DB está lista, verificar constraints existentes. En proyectos con perfiles sin auth, asegurarse que profiles.id no tenga FK a auth.users"
+    },
+    {
+      "id": "L-002",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "Rooms no se veían en el mapa porque el simulador usa ubicación de Cupertino, lejos de Medellín",
+      "fix": "Setear ubicación personalizada en el simulador (Debug > Location > Custom Location)",
+      "rule": "Cuando se trabaja con features geo-localizadas, verificar la ubicación del simulador/emulador. No asumir que la ubicación por defecto es correcta"
+    },
+    {
+      "id": "L-003",
+      "date": "2026-05-21",
+      "agent": "devops-agent",
+      "issue": "gh auth login falló porque el token no tenía scope read:org",
+      "fix": "Usar GH_TOKEN env var directamente, o generar token con scopes repo + read:org",
+      "rule": "Configurar gh auth al inicio del proyecto, no durante la pipeline. El token debe tener scopes repo y read:org"
+    },
+    {
+      "id": "L-004",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "PR incluyó archivos de pipeline no relacionados (PRD, plan técnico)",
+      "fix": "Eliminar archivos .opencode/current_prd.md y .opencode/technical_plan.md del commit",
+      "rule": "Al hacer commit en un feature branch, incluir solo archivos del feature. No subir artefactos de la pipeline (PRDs, planes técnicos)"
+    },
+    {
+      "id": "L-005",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "PR incluyó cambios en opencode.json y scripts/seed-rooms.ts que no son parte del feature",
+      "fix": "Revertir archivos no relacionados a su versión de main antes del PR",
+      "rule": "Usar git checkout main -- <file> para revertir archivos que no forman parte del feature actual"
+    },
+    {
+      "id": "L-006",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "Componente usaba function declaration en vez de arrow function",
+      "fix": "Cambiar export default function a const Component = () => ...",
+      "rule": "Usar siempre arrow functions para componentes en React Native"
+    },
+    {
+      "id": "L-007",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "PR no incluyó tests unitarios para el nuevo feature",
+      "fix": "Crear archivo __tests__/chats-tab.test.tsx con tests del componente",
+      "rule": "Todo PR debe incluir tests unitarios. Los tests van en __tests__/ con el patrón *.test.tsx. Usar @testing-library/react-native para renderizar componentes"
+    },
+    {
+      "id": "L-008",
+      "date": "2026-05-21",
+      "agent": "all",
+      "issue": "Pipeline de 5 agentes reemplazada por flujo de Superpowers",
+      "fix": "Migrar a Superpowers: instalar plugin, eliminar agentes viejos, reescribir AGENTS.md",
+      "rule": "El flujo de desarrollo ahora usa skills de Superpowers (skill brainstorming, skill writing-plans, etc.). No invocar @product-agent, @architect-agent, etc. Usar skill <nombre> para cargar el skill correspondiente"
+    },
+    {
+      "id": "L-009",
+      "date": "2026-05-21",
+      "agent": "all",
+      "issue": "Skills locales (git-flow, supabase) obsoletos al migrar a MCP servers directos",
+      "fix": "Eliminar skills git-flow y supabase de .opencode/skills/. Supabase y GitHub ahora se acceden via MCP",
+      "rule": "Preferir MCP servers sobre skills locales cuando exista un MCP server oficial. Skills locales se usan para metodología/flujo, MCP para acceso directo a APIs externas"
+    },
+    {
+      "id": "L-010",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Componentes y funciones usaban function declaration en vez de arrow functions",
+      "fix": "Convertir todas las function declarations a arrow functions en components/, app/, contexts/, hooks/, utils/",
+      "rule": "Usar siempre arrow functions para TODAS las funciones (componentes, hooks, helpers, context providers). Nunca usar function declarations (function foo(){}). Para default exports: asignar a const y luego export default."
+    },
+    {
+      "id": "L-011",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Feature requests sin branch dedicado pueden causar conflictos en main",
+      "fix": "Detectar prompts que empiezan con 'feat' y crear una rama feature/<desc> antes de implementar",
+      "rule": "Cuando un prompt empiece con 'feat', crear automáticamente una nueva rama desde main antes de cualquier implementación. El nombre de la rama debe ser feature/<descripcion-corta>. No desarrollar nunca en main."
+    },
+    {
+      "id": "L-012",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "PRs auto-mergeados sin revisión humana pueden introducir bugs o código no intencionado",
+      "fix": "Después de completar la feature en la rama, abrir un Pull Request con draft=false y asignar reviewer humano",
+      "rule": "Después de implementar y verificar una feature (verification-before-completion), abrir un Pull Request a main. El PR debe marcarse como listo para revisión (no draft), con descripción clara de los cambios. No mergear automáticamente — requiere revisión manual."
+    },
+    {
+      "id": "L-013",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Código asíncrono usaba .then() en vez de async/await, mezclando estilos",
+      "fix": "Convertir todos los .then() a async/await en useProfile.ts, RoomContext.tsx, _layout.tsx",
+      "rule": "Todo código asíncrono debe usar async/await. Nunca usar .then(). Para efectos secundarios en useEffect, crear una función async interna y ejecutarla inmediatamente."
+    },
+    {
+      "id": "L-014",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Llamadas a Supabase estaban dispersas por componentes, hooks y contexts, sin capa de abstracción",
+      "fix": "Crear services/ con servicios por dominio (profile, room, conversation, message, block, report) y un facade (services/index.ts) que exporta un objeto 'api' unificado",
+      "rule": "Todas las llamadas a Supabase deben pasar por la capa services/ con el facade 'api'. Los componentes y hooks nunca importan supabase directamente, solo importan { api } from '@/services'. Los servicios se organizan por dominio (profile, room, conversation, message, report, block). El facade expone un objeto api con sub-propiedades por dominio."
+    },
+    {
+      "id": "L-015",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Servicios sin try-catch pueden lanzar excepciones no controladas que rompen la UI",
+      "fix": "Envolver cada función async de services/ en try-catch, loguear el error con prefijo [serviceName.methodName] y retornar un valor seguro (null, false, [])",
+      "rule": "Toda función async en services/ debe estar envuelta en try-catch. El catch debe loguear con console.error usando el prefijo [serviceName.methodName] y retornar un valor default seguro (null, false, [], void) para que la UI nunca se rompa por un error de API."
+    },
+    {
+      "id": "L-016",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "El componente TabLayout tenía lógica inline (ternarios con Platform.OS e insets.bottom) dentro del objeto screenOptions en JSX",
+      "fix": "Extraer la lógica a variables computadas (isAndroid, tabPaddingBottom, tabHeight) antes del return en el cuerpo del componente",
+      "rule": "Los componentes React no deben contener lógica (operadores ternarios, condicionales, cálculos) inline dentro del JSX. Toda la lógica debe extraerse a variables computadas en el cuerpo del componente, antes del return."
+    },
+    {
+      "id": "L-017",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "chat-card.tsx, person-card.tsx, message-bubble.tsx, hello-wave.tsx tenían todos los estilos inline en lugar de un archivo de estilos dedicado",
+      "fix": "Crear <component>.styles.ts para cada componente, mover todos los estilos a StyleSheet.create(), importarlos en el componente",
+      "rule": "Cada componente debe tener un archivo de estilos dedicado <nombre>.styles.ts con StyleSheet.create(). Ningún componente debe contener objetos style={{}} inline. Para estilos dinámicos (condicionales), usar arreglos style={[styles.base, condition && styles.variant]} o ternarios entre estilos pre-definidos."
+    },
+    {
+      "id": "L-018",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Varios useEffect tenían lógica inline (funciones async, setTimeout, condicionales) declarada dentro del callback del efecto",
+      "fix": "Extraer toda la lógica inline a funciones nombradas declaradas al inicio del hook (después de los estados/refs, antes de los useEffects), usando closure en lugar de parámetros. Las dependencias reales (userId, etc.) van en el array de deps del useEffect, no la función contenedora. Suprimir eslint-disable-next-line react-hooks/exhaustive-deps cuando sea necesario.",
+      "rule": "En hooks/contextos, toda la lógica dentro de useEffect debe extraerse a funciones nombradas declaradas al inicio del hook (después de estados/refs, antes de los useEffects), usando closure para acceder a los setters/valores. No usar IIFEs ni lógica inline en el callback del useEffect. Las funciones extraídas NO van en el array de dependencias; las dependencias reales (userId, conversationId, etc.) son las que controlan la re-ejecución del efecto. Suprimir la advertencia de exhaustive-deps con eslint-disable-next-line."
+    },
+    {
+      "id": "L-019",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "El finishing skill ofrecía 4 opciones, y siempre elegir 'Create PR' es más rápido que preguntar al usuario",
+      "fix": "Agregar regla L-019: después de verification-before-completion exitoso, abrir automáticamente un PR sin preguntar, a menos que el usuario indique otra cosa",
+      "rule": "Después de completar todas las tareas de implementación y pasar verification-before-completion (lint + tsc + tests), abrir automáticamente un Pull Request a main usando GitHub MCP. No presentar las opciones del finishing-a-development-branch skill a menos que el usuario haya indicado explícitamente que quiere merge local, mantener o descartar."
+    },
+    {
+      "id": "L-020",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Strings hardcodeados en componentes (login, onboarding, useProfile) sin archivo centralizado de labels",
+      "fix": "Crear constants/labels.ts con todas las strings de UI y referenciarlas desde los componentes",
+      "rule": "Todos los strings de UI visibles al usuario deben centralizarse en constants/labels.ts. Ningún componente debe contener strings hardcodeados. Importar las constantes con import { STRING_NAME } from '@/constants/labels'."
+    },
+    {
+      "id": "L-021",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "app/index.tsx retornaba null durante loading, sin feedback visual para el usuario",
+      "fix": "Reemplazar return null por un loading state con ActivityIndicator y texto explicativo",
+      "rule": "Nunca retornar null o undefined durante estados de carga en la UI. Siempre mostrar un indicador visual (ActivityIndicator, spinner, skeleton) con un texto que explique qué está sucediendo (e.g. 'Loading your profile…')."
+    },
+    {
+      "id": "L-022",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "La lógica de estado y handlers de LoginScreen y OnboardingScreen estaba dentro del componente en vez de un hook separado",
+      "fix": "Extraer estados, useEffects, y handlers a hooks dedicados (useLogin.ts, useOnboarding.ts) dejando el componente únicamente con JSX y referencias al hook",
+      "rule": "La lógica de estado, efectos secundarios y handlers de un screen/componente debe extraerse a un custom hook dedicado en hooks/<useScreen>.ts. El componente solo debe contener JSX y llamadas al hook. No mezclar lógica de estado con markup en el mismo bloque."
+    },
+    {
+      "id": "L-023",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Google Client IDs hardcodeados en services/auth.ts en vez de usar variables de entorno",
+      "fix": "Mover WEB_CLIENT_ID e IOS_CLIENT_ID a .env con prefijo EXPO_PUBLIC_ y leerlos con process.env.EXPO_PUBLIC_*",
+      "rule": "Toda API key, client ID, secret, o identificador de servicio externo debe ir en .env con prefijo EXPO_PUBLIC_ (para Expo) y leerse con process.env. Nunca hardcodear estos valores en el código fuente."
+    },
+    {
+      "id": "L-024",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "services/auth.ts contenía un comentario innecesario que explicaba código obvio ('// Configure once at module load')",
+      "fix": "Eliminar el comentario — el código es auto-explicativo",
+      "rule": "No dejar comentarios que expliquen código obvio o auto-explicativo. Los comentarios deben reservarse para explicar por qué se hace algo inusual, no qué hace el código. El código debe ser auto-documentado."
+    },
+    {
+      "id": "L-025",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "services/index.ts tenía un bloque JSDoc grande con ejemplos de uso que nunca se actualizaba y quedó como código comentado",
+      "fix": "Eliminar el bloque JSDoc con ejemplos de uso comentados",
+      "rule": "Nunca dejar código comentado en el código base. Si es información útil para developers, ponerla en AGENTS.md, README, o documentación externa. El código comentado se vuelve obsoleto y engañoso. Excepción: solo si el desarrollador indica explícitamente 'DONT DELETE'."
+    },
+    {
+      "id": "L-026",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "El feature Google Login se implementó sin tests unitarios — los tests se crearon después como fix de PR review",
+      "fix": "Crear tests para labels, hooks (useLogin, useOnboarding), screens (LoginScreen, OnboardingScreen), y redirect logic (Index) como parte del feature",
+      "rule": "Dentro del flujo de trabajo para crear un feature, crear también los tests unitarios de cada nuevo componente/hook/servicio ANTES del verification-before-completion. Cada nuevo archivo en app/, hooks/, services/, o contexts/ debe tener su archivo de test correspondiente en __tests__/. Los tests deben cubrir: estados de carga, estados de error, estados vacíos, y el flujo feliz. Usar @testing-library/react-native para componentes y mocks de hooks con jest.fn(). Los archivos de constantes simples (constants/*.ts) no necesitan tests — son valores planos."
+    },
+    {
+      "id": "L-027",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": ".env con Google Client IDs y SUPABASE keys no estaba en .gitignore, exponiendo secrets en el repo",
+      "fix": "Agregar '.env' al .gitignore (solo estaba .env*.local)",
+      "rule": "Siempre verificar que .env esté en .gitignore antes de hacer commit. .env*.local no es suficiente — el archivo .env raíz también debe estar ignorado. Usar .env.example para documentar las variables necesarias."
+    },
+    {
+      "id": "L-028",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Componentes, estilos y hooks estaban dispersos en app/ y hooks/ sin agrupación por componente",
+      "fix": "Agrupar cada componente en una carpeta con su nombre: app/<componente>/index.tsx + <componente>.styles.ts + use<Componente>.ts",
+      "rule": "Cada componente de pantalla debe tener su propia carpeta en app/ con el nombre del componente. Dentro: index.tsx (componente), <nombre>.styles.ts (estilos), y hooks relacionados (use<nombre>.ts). No dejar archivos sueltos en app/ — siempre dentro de su carpeta. Las rutas de Expo Router se mantienen porque index.tsx dentro de la carpeta corresponde a la ruta de la carpeta."
+    }
+  ]
+}

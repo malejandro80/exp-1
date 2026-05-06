@@ -1,0 +1,40 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4.5",
+  "default_agent": "jarvis",
+  "instructions": ["AGENTS.md"],
+  "mcp": {
+    "supabase": {
+      "type": "remote",
+      "url": "https://mcp.supabase.com/mcp?project_ref=vensxbhckfjojkngptxy",
+      "enabled": true,
+      "oauth": {}
+    },
+    "github": {
+      "type": "remote",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "enabled": true,
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer {file:~/.config/opencode/.secrets/github-pat}"
+      }
+    }
+  },
+  "skills": {
+    "paths": ["/Users/miguel/.config/opencode/skills/superpowers"]
+  },
+  "plugin": [
+    "/Users/miguel/.config/opencode/superpowers/.opencode/plugins/superpowers.js"
+  ],
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "npm test": "allow",
+      "pytest": "allow",
+      "git status": "allow"
+    },
+    "skill": {
+      "*": "allow"
+    }
+  }
+}
