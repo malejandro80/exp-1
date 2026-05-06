@@ -4,11 +4,25 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
 import { DISPLAY_NAME_MAX_LENGTH } from '@/constants/rules'
+import {
+  PROFILE_SAVING,
+  PROFILE_SAVE,
+  PROFILE_RESET,
+  PROFILE_DISPOSABLE_HINT,
+  PROFILE_DISPLAY_NAME,
+  ADMIN_MANAGE_ROOM,
+  ADMIN_CREATE_ROOM,
+  ONBOARDING_PLACEHOLDER,
+} from '@/constants/labels'
 import { styles } from './profile.styles'
 import { useProfile } from './useProfile'
 
 const ProfileScreen = () => {
+<<<<<<< HEAD
   const { profile, nameInput, saving, error, setNameInput, upsertProfile, handleReset } = useProfile()
+=======
+  const { profile, nameInput, saving, error, role, adminRoom, router, setNameInput, upsertProfile, handleReset } = useProfile()
+>>>>>>> d6f388f (Initial commit with all changes)
 
   return (
     <SafeAreaView style={styles.container}>
@@ -20,12 +34,12 @@ const ProfileScreen = () => {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Display Name</Text>
+          <Text style={styles.label}>{PROFILE_DISPLAY_NAME}</Text>
           <TextInput
             style={styles.input}
             value={nameInput}
             onChangeText={setNameInput}
-            placeholder="Your name"
+            placeholder={ONBOARDING_PLACEHOLDER}
             placeholderTextColor={Colors.light.textMuted}
             maxLength={DISPLAY_NAME_MAX_LENGTH}
           />
@@ -36,7 +50,7 @@ const ProfileScreen = () => {
           onPress={upsertProfile}
           disabled={saving}
         >
-          <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save'}</Text>
+          <Text style={styles.saveButtonText}>{saving ? PROFILE_SAVING : PROFILE_SAVE}</Text>
         </TouchableOpacity>
 
         {error && (
@@ -48,14 +62,37 @@ const ProfileScreen = () => {
 
         <View style={styles.divider} />
 
-        <Text style={styles.disposableHint}>
-          You are using a disposable profile.{'\n'}
-          No account or email required.
-        </Text>
+        <Text style={styles.disposableHint}>{PROFILE_DISPOSABLE_HINT}</Text>
 
         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-          <Text style={styles.resetText}>Reset Profile</Text>
+          <Text style={styles.resetText}>{PROFILE_RESET}</Text>
         </TouchableOpacity>
+<<<<<<< HEAD
+=======
+
+        {role === 'admin' && (
+          <>
+            <View style={styles.divider} />
+            {adminRoom ? (
+              <TouchableOpacity
+                style={styles.adminButton}
+                onPress={() => router.push('/(tabs)/admin/manage-room')}
+              >
+                <Ionicons name="storefront-outline" size={20} color={Colors.light.brand} />
+                <Text style={styles.adminButtonText}>{ADMIN_MANAGE_ROOM}</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.adminButton}
+                onPress={() => router.push('/(tabs)/admin/create-room')}
+              >
+                <Ionicons name="add-circle-outline" size={20} color={Colors.light.brand} />
+                <Text style={styles.adminButtonText}>{ADMIN_CREATE_ROOM}</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+>>>>>>> d6f388f (Initial commit with all changes)
       </View>
     </SafeAreaView>
   )

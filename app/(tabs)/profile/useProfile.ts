@@ -1,19 +1,21 @@
 /** @format */
 
-import { useEffect, useState } from 'react'
-import { Alert } from 'react-native'
-import { api } from '@/services'
-import { useIdentity } from '@/contexts/IdentityContext'
 import {
   PROFILE_LOAD_ERROR,
   PROFILE_SAVE_ERROR,
-  PROFILE_SAVED_TITLE,
   PROFILE_SAVED_MESSAGE,
-  SIGNOUT_TITLE,
-  SIGNOUT_MESSAGE,
+  PROFILE_SAVED_TITLE,
   SIGNOUT_CANCEL,
   SIGNOUT_CONFIRM,
+  SIGNOUT_MESSAGE,
+  SIGNOUT_TITLE
 } from '@/constants/labels'
+import { useIdentity } from '@/contexts/IdentityContext'
+import type { Room } from '@/lib/types'
+import { api } from '@/services'
+import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { Alert } from 'react-native'
 
 interface ProfileRow {
   id: string
@@ -26,11 +28,13 @@ interface ProfileRow {
 }
 
 export const useProfile = () => {
-  const { userId, displayName, setDisplayName, signOut } = useIdentity()
+  const { userId, displayName, role, setDisplayName, signOut } = useIdentity()
   const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [nameInput, setNameInput] = useState(displayName)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+  const [adminRoom, setAdminRoom] = useState<Room | null>(null)
 
   const fetchProfile = async () => {
     if (!userId) return
@@ -45,8 +49,14 @@ export const useProfile = () => {
 
   useEffect(() => {
     fetchProfile()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, displayName])
+
+  useEffect(() => {
+    if (role === 'admin' && userId) {
+      api.rooms.getByAdmin(userId).then(setAdminRoom)
+    }
+  }, [role, userId])
 
   const upsertProfile = async () => {
     if (!userId || !nameInput.trim()) return
@@ -55,7 +65,7 @@ export const useProfile = () => {
     const ok = await api.profiles.upsert({
       id: userId,
       display_name: nameInput.trim(),
-      last_seen: new Date().toISOString(),
+      last_seen: new Date().toISOString()
     })
     setSaving(false)
     if (!ok) {
@@ -67,14 +77,10 @@ export const useProfile = () => {
   }
 
   const handleReset = () => {
-    Alert.alert(
-      SIGNOUT_TITLE,
-      SIGNOUT_MESSAGE,
-      [
-        { text: SIGNOUT_CANCEL, style: 'cancel' },
-        { text: SIGNOUT_CONFIRM, style: 'destructive', onPress: signOut },
-      ],
-    )
+    Alert.alert(SIGNOUT_TITLE, SIGNOUT_MESSAGE, [
+      { text: SIGNOUT_CANCEL, style: 'cancel' },
+      { text: SIGNOUT_CONFIRM, style: 'destructive', onPress: signOut }
+    ])
   }
 
   return {
@@ -82,8 +88,11 @@ export const useProfile = () => {
     nameInput,
     saving,
     error,
+    role,
+    adminRoom,
+    router,
     setNameInput,
     upsertProfile,
-    handleReset,
+    handleReset
   }
 }

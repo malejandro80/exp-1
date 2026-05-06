@@ -134,3 +134,73 @@ create policy "Users can view their own reports"
 
 create policy "Users can report others"
   on reports for insert with check (auth.uid() = reporter_id);
+
+-- Admin role for profiles
+alter table profiles add column if not exists role text not null default 'user'
+  check (role in ('user', 'admin'));
+
+-- Admin ownership for rooms
+alter table rooms add column if not exists admin_id uuid references profiles(id);
+alter table rooms add column if not exists is_active boolean not null default true;
+
+-- Promotions table
+create table if not exists promotions (
+  id uuid primary key default gen_random_uuid(),
+  room_id uuid not null references rooms(id) on delete cascade,
+  title text not null,
+  description text,
+  image_url text,
+  duration_minutes int not null check (duration_minutes > 0),
+  starts_at timestamptz not null default now(),
+  ends_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+
+-- Push tokens table
+create table if not exists push_tokens (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references profiles(id) on delete cascade unique,
+  token text not null,
+  created_at timestamptz not null default now()
+);
+
+-- RLS policies for promotions
+alter table promotions enable row level security;
+alter table push_tokens enable row level security;
+
+create policy "Anyone can read promotions"
+  on promotions for select using (true);
+
+create policy "Admins can insert promotions"
+  on promotions for insert with check (
+    exists (
+      select 1 from rooms
+      where rooms.id = promotions.room_id
+      and rooms.admin_id = auth.uid()
+    )
+  );
+
+create policy "Admins can update own promotions"
+  on promotions for update using (
+    exists (
+      select 1 from rooms
+      where rooms.id = promotions.room_id
+      and rooms.admin_id = auth.uid()
+    )
+  );
+
+create policy "Users can manage their own push token"
+  on push_tokens for insert with check (auth.uid() = user_id);
+
+create policy "Users can update their own push token"
+  on push_tokens for update using (auth.uid() = user_id);
+
+create policy "Users can read their own push token"
+  on push_tokens for select using (auth.uid() = user_id);
+
+-- Update rooms RLS for admin creation
+create policy "Admins can insert rooms"
+  on rooms for insert with check (auth.uid() = admin_id);
+
+create policy "Admins can update own rooms"
+  on rooms for update using (admin_id = auth.uid());

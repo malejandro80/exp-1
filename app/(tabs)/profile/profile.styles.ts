@@ -51,4 +51,24 @@ export const styles = StyleSheet.create({
   },
   resetButton: { padding: Spacing.md },
   resetText: { color: Colors.light.destructive, fontSize: 16, fontWeight: '500' },
+<<<<<<< HEAD
+=======
+  adminButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.light.brand,
+    gap: 8,
+    marginTop: 12,
+  },
+  adminButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.light.brand,
+  },
+>>>>>>> d6f388f (Initial commit with all changes)
 })

@@ -1,3 +1,5 @@
+/** @format */
+
 import { authService } from './auth'
 import { profileService } from './profile'
 import { roomService } from './room'
@@ -6,6 +8,8 @@ import type { ConversationWithPreview } from './conversation'
 import { messageService } from './message'
 import { blockService } from './block'
 import { reportService } from './report'
+import { pushTokenService } from './push-token'
+import { promotionService } from './promotion'
 
 export const api = {
   auth: authService,
@@ -15,6 +19,8 @@ export const api = {
   messages: messageService,
   blocks: blockService,
   reports: reportService,
+  pushTokens: pushTokenService,
+  promotions: promotionService
 }
 
 export type { ConversationWithPreview }
