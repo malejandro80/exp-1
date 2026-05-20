@@ -1,0 +1,54 @@
+export interface Profile {
+  id: string
+  display_name: string | null
+  avatar_url: string | null
+  latitude: number | null
+  longitude: number | null
+  last_seen: string
+  created_at: string
+}
+
+export interface Room {
+  id: string
+  name: string
+  description: string | null
+  latitude: number
+  longitude: number
+  radius_meters: number
+  created_at: string
+}
+
+export interface Conversation {
+  id: string
+  participant1_id: string
+  participant2_id: string
+  last_message_at: string
+  created_at: string
+}
+
+export interface Message {
+  id: number
+  conversation_id: string
+  sender_id: string
+  content: string
+  created_at: string
+}
+
+export interface Block {
+  id: string
+  blocker_id: string
+  blocked_id: string
+  created_at: string
+}
+
+export interface Report {
+  id: string
+  reporter_id: string
+  reported_id: string
+  reason: string | null
+  created_at: string
+}
+
+export interface PersonInRoom extends Profile {
+  distance_meters: number
+}
