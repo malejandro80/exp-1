@@ -35,6 +35,7 @@ export default function NearbyScreen() {
     requestTarget,
     requestMessage,
     setRequestMessage,
+    sending,
     handleSendRequest,
     handleCancelRequest,
   } = useNearby()
@@ -194,7 +195,7 @@ export default function NearbyScreen() {
         )}
       />
 
-      <Modal visible={!!requestTarget} transparent animationType="fade">
+      <Modal visible={!!requestTarget} transparent animationType="fade" onRequestClose={handleCancelRequest}>
         <KeyboardAvoidingView
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -238,10 +239,11 @@ export default function NearbyScreen() {
                 <Text style={{ fontSize: 16, fontWeight: '600', color: Colors.light.textSecondary }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: Colors.light.brand }}
+                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: Colors.light.brand, opacity: (!requestMessage.trim() || sending) ? 0.4 : 1 }}
                 onPress={handleSendRequest}
+                disabled={!requestMessage.trim() || sending}
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>Send</Text>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>{sending ? 'Sending...' : 'Send'}</Text>
               </TouchableOpacity>
             </View>
           </View>
