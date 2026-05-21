@@ -1,5 +1,5 @@
 import ChatsScreen from '../(chat)/chats'
 
-export default function ChatsTab() {
-  return <ChatsScreen />
-}
+const ChatsTab = () => <ChatsScreen />
+
+export default ChatsTab

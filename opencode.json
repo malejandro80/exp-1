@@ -3,8 +3,16 @@
   "model": "anthropic/claude-sonnet-4.5",
   "default_agent": "product-agent",
   "instructions": ["AGENTS.md"],
+  "plugins": [
+    "opencode-daytona",
+    "opencode-pty"
+  ],
   "permission": {
-    "bash": "allow"
-  },
-  "plugin": ["opencode-pixel-agents"]
+    "bash": {
+      "allow": ["npm test", "pytest", "git status"]
+    },
+    "skill": {
+      "*": "allow"
+    }
+  }
 }

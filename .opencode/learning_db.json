@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "id": "L-001",
+      "date": "2026-05-21",
+      "agent": "all",
+      "issue": "La tabla profiles tenía FK constraint a auth.users que no existe en proyectos sin autenticación",
+      "fix": "ALTER TABLE profiles DROP CONSTRAINT profiles_id_fkey",
+      "rule": "Antes de asumir que la DB está lista, verificar constraints existentes. En proyectos con perfiles sin auth, asegurarse que profiles.id no tenga FK a auth.users"
+    },
+    {
+      "id": "L-002",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "Rooms no se veían en el mapa porque el simulador usa ubicación de Cupertino, lejos de Medellín",
+      "fix": "Setear ubicación personalizada en el simulador (Debug > Location > Custom Location)",
+      "rule": "Cuando se trabaja con features geo-localizadas, verificar la ubicación del simulador/emulador. No asumir que la ubicación por defecto es correcta"
+    },
+    {
+      "id": "L-003",
+      "date": "2026-05-21",
+      "agent": "devops-agent",
+      "issue": "gh auth login falló porque el token no tenía scope read:org",
+      "fix": "Usar GH_TOKEN env var directamente, o generar token con scopes repo + read:org",
+      "rule": "Configurar gh auth al inicio del proyecto, no durante la pipeline. El token debe tener scopes repo y read:org"
+    }
+  ]
+}

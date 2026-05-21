@@ -26,80 +26,52 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // ── Change these to your city ──────────────────────────────────
-const BASE_LAT = 6.2476    // Medellín city center
-const BASE_LNG = -75.5658
+const BASE_LAT = 40.4168   // Madrid city center
+const BASE_LNG = -3.7038
 // ────────────────────────────────────────────────────────────────
 
 const rooms = [
   {
-    name: 'Parque Lleras',
-    description: 'Rumba y bares en El Poblado',
-    latitude: BASE_LAT + 0.003,
-    longitude: BASE_LNG + 0.002,
+    name: 'Central Perk',
+    description: 'Coffee & coworking — bring your laptop',
+    latitude: BASE_LAT + 0.002,
+    longitude: BASE_LNG - 0.001,
     radius_meters: 80,
   },
   {
-    name: 'Museo de Antioquia',
-    description: 'Arte y cultura de Botero',
-    latitude: BASE_LAT - 0.004,
-    longitude: BASE_LNG + 0.001,
+    name: 'Rooftop Lounge',
+    description: 'Sunset views and good vibes',
+    latitude: BASE_LAT - 0.001,
+    longitude: BASE_LNG + 0.003,
+    radius_meters: 50,
+  },
+  {
+    name: 'Library Quiet Zone',
+    description: 'Study room — shh!',
+    latitude: BASE_LAT + 0.003,
+    longitude: BASE_LNG + 0.002,
+    radius_meters: 40,
+  },
+  {
+    name: 'Food Market',
+    description: 'Grab a bite and meet people',
+    latitude: BASE_LAT - 0.002,
+    longitude: BASE_LNG - 0.002,
     radius_meters: 100,
   },
   {
-    name: 'Comuna 13 Graffiti Tour',
-    description: 'Street art y escaleras eléctricas',
-    latitude: BASE_LAT - 0.008,
-    longitude: BASE_LNG + 0.005,
-    radius_meters: 120,
-  },
-  {
-    name: 'Biblioteca España',
-    description: 'Vista panorámica de la ciudad',
-    latitude: BASE_LAT - 0.001,
-    longitude: BASE_LNG - 0.004,
-    radius_meters: 70,
-  },
-  {
-    name: 'Estadio Atanasio',
-    description: 'Fútbol y conciertos',
-    latitude: BASE_LAT + 0.001,
-    longitude: BASE_LNG - 0.003,
-    radius_meters: 90,
-  },
-  {
-    name: 'Mercado del Río',
-    description: 'Comida y coworking',
-    latitude: BASE_LAT + 0.002,
-    longitude: BASE_LNG - 0.001,
-    radius_meters: 60,
-  },
-  {
-    name: 'Jardín Botánico',
-    description: 'Naturaleza y senderos',
-    latitude: BASE_LAT - 0.006,
-    longitude: BASE_LNG - 0.002,
-    radius_meters: 110,
-  },
-  {
-    name: 'El Tesoro Parque Comercial',
-    description: 'Mall con terraza y vista',
-    latitude: BASE_LAT + 0.005,
-    longitude: BASE_LNG + 0.004,
-    radius_meters: 80,
-  },
-  {
-    name: 'Pueblito Paisa',
-    description: 'Mirador del Cerro Nutibara',
-    latitude: BASE_LAT - 0.005,
-    longitude: BASE_LNG + 0.003,
-    radius_meters: 60,
-  },
-  {
-    name: 'Universidad EAFIT',
-    description: 'Zona universitaria, mucha gente',
+    name: 'Park Bench',
+    description: 'Fresh air, casual chat',
     latitude: BASE_LAT + 0.004,
-    longitude: BASE_LNG + 0.001,
-    radius_meters: 75,
+    longitude: BASE_LNG - 0.003,
+    radius_meters: 60,
+  },
+  {
+    name: 'Tech Meetup',
+    description: 'Devs & founders hanging out',
+    latitude: BASE_LAT - 0.003,
+    longitude: BASE_LNG + 0.004,
+    radius_meters: 70,
   },
 ]
 
