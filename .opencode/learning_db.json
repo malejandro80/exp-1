@@ -47,6 +47,14 @@
       "issue": "Componente usaba function declaration en vez de arrow function",
       "fix": "Cambiar export default function a const Component = () => ...",
       "rule": "Usar siempre arrow functions para componentes en React Native"
+    },
+    {
+      "id": "L-007",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "PR no incluyó tests unitarios para el nuevo feature",
+      "fix": "Crear archivo __tests__/chats-tab.test.tsx con tests del componente",
+      "rule": "Todo PR debe incluir tests unitarios. Los tests van en __tests__/ con el patrón *.test.tsx. Usar @testing-library/react-native para renderizar componentes"
     }
   ]
 }
