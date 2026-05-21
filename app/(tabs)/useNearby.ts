@@ -11,7 +11,7 @@ const STALE_MINUTES = 5
 
 export function useNearby() {
   const { userId } = useIdentity()
-  const { latitude, longitude } = useLocation()
+  const { latitude, longitude, gpsReady, heading } = useLocation()
   const { currentRoom, nearbyRooms, loading: roomLoading, isJoined, joinRoom, leaveRoom } = useRoom()
   const router = useRouter()
   const [people, setPeople] = useState<PersonInRoom[]>([])
@@ -19,6 +19,8 @@ export function useNearby() {
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
+  const [requestTarget, setRequestTarget] = useState<PersonInRoom | null>(null)
+  const [requestMessage, setRequestMessage] = useState('')
 
   const fetchPeopleInRoom = useCallback(async () => {
     if (!currentRoom || !userId) return
@@ -76,9 +78,16 @@ export function useNearby() {
     }
   }, [fetchPeopleInRoom, currentRoom])
 
-  const handleTapPerson = useCallback(async (person: PersonInRoom) => {
-    const me = userId!
-    const them = person.id
+  const handleTapPerson = useCallback((person: PersonInRoom) => {
+    setRequestTarget(person)
+    setRequestMessage('')
+  }, [])
+
+  const handleSendRequest = useCallback(async () => {
+    if (!requestTarget || !requestMessage.trim() || !userId) return
+
+    const me = userId
+    const them = requestTarget.id
     const user1 = me < them ? me : them
     const user2 = me < them ? them : me
 
@@ -93,10 +102,18 @@ export function useNearby() {
 
     if (existing) {
       conversationId = (existing as any).id
+      await supabase
+        .from('conversations')
+        .update({ status: 'pending', last_message_at: new Date().toISOString() } as any)
+        .eq('id', conversationId)
     } else {
       const { data: newConv, error } = await supabase
         .from('conversations')
-        .insert({ participant1_id: user1, participant2_id: user2 } as any)
+        .insert({
+          participant1_id: user1,
+          participant2_id: user2,
+          status: 'pending',
+        } as any)
         .select('id')
         .single()
 
@@ -107,8 +124,21 @@ export function useNearby() {
       conversationId = (newConv as any).id
     }
 
+    await supabase.from('messages').insert({
+      conversation_id: conversationId,
+      sender_id: me,
+      content: requestMessage.trim(),
+    } as any)
+
+    setRequestTarget(null)
+    setRequestMessage('')
     router.push(`/chat/${conversationId}?otherUserId=${them}` as any)
-  }, [userId, router])
+  }, [requestTarget, requestMessage, userId, router])
+
+  const handleCancelRequest = useCallback(() => {
+    setRequestTarget(null)
+    setRequestMessage('')
+  }, [])
 
   const handleJoinRoom = useCallback(() => {
     if (selectedRoom) {
@@ -121,6 +151,8 @@ export function useNearby() {
     userId,
     latitude,
     longitude,
+    heading,
+    gpsReady,
     currentRoom,
     nearbyRooms,
     roomLoading,
@@ -136,5 +168,10 @@ export function useNearby() {
     setRefreshing,
     handleTapPerson,
     handleJoinRoom,
+    requestTarget,
+    requestMessage,
+    setRequestMessage,
+    handleSendRequest,
+    handleCancelRequest,
   }
 }

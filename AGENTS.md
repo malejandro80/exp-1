@@ -76,7 +76,9 @@ El archivo `.opencode/learning_db.json` almacena lecciones aprendidas durante el
 ## Notas importantes
 
 - Los agentes dedicados anteriores (`@product-agent`, `@architect-agent`, `@developer-agent`, `@qa-agent`, `@devops-agent`) ya no existen. El flujo se maneja con skills de Superpowers.
-- Los skills locales `git-flow` y `supabase` se mantienen y son compatibles con Superpowers.
+- Hay dos MCP servers configurados para acceso directo:
+  - **Supabase MCP** — acceso completo a DB, API keys, auth, edge functions, storage
+  - **GitHub MCP** — acceso completo a issues, PRs, repos, usuarios, búsqueda
 - Para cargar un skill de Superpowers, usa el comando `skill` con el nombre del skill (ej: `skill brainstorming`).
 
 <!-- @format -->
