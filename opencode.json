@@ -1,11 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "anthropic/claude-sonnet-4.5",
-  "default_agent": "product-agent",
+  "default_agent": null,
   "instructions": ["AGENTS.md"],
   "plugins": [
     "opencode-daytona",
-    "opencode-pty"
+    "opencode-pty",
+    "superpowers@git+https://github.com/obra/superpowers.git"
   ],
   "permission": {
     "bash": {
