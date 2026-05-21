@@ -10,7 +10,7 @@ import { useChats } from './useChats'
 const ITEM_HEIGHT = 76
 
 export default function ChatsScreen() {
-  const { conversations, loading, error, navigateToChat } = useChats()
+  const { conversations, loading, error, navigateToChat, userId, handleAccept, handleDecline } = useChats()
 
   if (loading) {
     return (
@@ -59,7 +59,11 @@ export default function ChatsScreen() {
             displayName={item.otherUser?.display_name || null}
             lastMessage={item.lastMessage}
             lastMessageAt={item.last_message_at}
+            status={item.status}
+            isPendingRecipient={item.status === 'pending' && item.participant2_id === userId}
             onPress={() => navigateToChat(item)}
+            onAccept={() => handleAccept(item.id)}
+            onDecline={() => handleDecline(item.id)}
           />
         )}
       />
