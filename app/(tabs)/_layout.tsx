@@ -32,6 +32,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name='chat'
+        options={{
+          title: 'Chats',
+          tabBarLabel: 'Chats',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name='chatbubbles-outline' color={color} size={size} />
+          )
+        }}
+      />
+      <Tabs.Screen
         name='profile'
         options={{
           title: 'Profile',
