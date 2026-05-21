@@ -20,7 +20,8 @@ create table if not exists rooms (
   latitude double precision not null,
   longitude double precision not null,
   radius_meters double precision not null default 50,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  unique (name)
 );
 
 -- Conversations (pairs of users)
