@@ -29,6 +29,7 @@ export function useChat() {
   const [otherUser, setOtherUser] = useState<OtherProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [conversationStatus, setConversationStatus] = useState<'pending' | 'active'>('active')
   const flatListRef = useRef<FlatList>(null)
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export function useChat() {
 
     const load = async () => {
       try {
-        const [messagesResult, profileResult] = await Promise.all([
+        const [messagesResult, profileResult, convResult] = await Promise.all([
           supabase
             .from('messages')
             .select('*')
@@ -51,12 +52,20 @@ export function useChat() {
             .select('display_name, avatar_url')
             .eq('id', otherUserId)
             .single(),
+          supabase
+            .from('conversations')
+            .select('status')
+            .eq('id', conversationId)
+            .single(),
         ])
 
         if (messagesResult.error) throw messagesResult.error
 
         setMessages(((messagesResult.data as any[]) || []).reverse())
         setOtherUser(profileResult.data as OtherProfile | null)
+        if (convResult.data) {
+          setConversationStatus((convResult.data as any).status as 'pending' | 'active')
+        }
       } catch (err) {
         console.error('Failed to load messages:', err)
         setError('Could not load messages.')
@@ -118,6 +127,8 @@ export function useChat() {
     ])
   }, [input, conversationId, userId])
 
+  const isRecipient = conversationStatus === 'pending' && messages.length > 0 && messages[0].sender_id !== userId
+
   const handleBlock = useCallback(() => {
     if (!userId || !otherUserId) return
     Alert.alert(
@@ -172,6 +183,28 @@ export function useChat() {
     )
   }, [userId, otherUserId, otherUser])
 
+  const handleAcceptRequest = useCallback(async () => {
+    if (!conversationId) return
+    const { error } = await supabase
+      .from('conversations')
+      .update({ status: 'active' } as any)
+      .eq('id', conversationId)
+    if (error) {
+      console.error('Failed to accept request:', error)
+      return
+    }
+    setConversationStatus('active')
+  }, [conversationId])
+
+  const handleDeclineRequest = useCallback(async () => {
+    if (!conversationId) return
+    await supabase
+      .from('conversations')
+      .update({ status: 'declined' } as any)
+      .eq('id', conversationId)
+    router.back()
+  }, [conversationId])
+
   const showActions = useCallback(() => {
     Alert.alert(
       otherUser?.display_name || 'User',
@@ -198,5 +231,9 @@ export function useChat() {
     setInput,
     sendMessage,
     showActions,
+    conversationStatus,
+    isRecipient,
+    handleAcceptRequest,
+    handleDeclineRequest,
   }
 }
