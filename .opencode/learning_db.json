@@ -55,6 +55,14 @@
       "issue": "PR no incluyó tests unitarios para el nuevo feature",
       "fix": "Crear archivo __tests__/chats-tab.test.tsx con tests del componente",
       "rule": "Todo PR debe incluir tests unitarios. Los tests van en __tests__/ con el patrón *.test.tsx. Usar @testing-library/react-native para renderizar componentes"
+    },
+    {
+      "id": "L-008",
+      "date": "2026-05-21",
+      "agent": "all",
+      "issue": "Pipeline de 5 agentes reemplazada por flujo de Superpowers",
+      "fix": "Migrar a Superpowers: instalar plugin, eliminar agentes viejos, reescribir AGENTS.md",
+      "rule": "El flujo de desarrollo ahora usa skills de Superpowers (skill brainstorming, skill writing-plans, etc.). No invocar @product-agent, @architect-agent, etc. Usar skill <nombre> para cargar el skill correspondiente"
     }
   ]
 }
