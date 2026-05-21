@@ -23,6 +23,30 @@
       "issue": "gh auth login falló porque el token no tenía scope read:org",
       "fix": "Usar GH_TOKEN env var directamente, o generar token con scopes repo + read:org",
       "rule": "Configurar gh auth al inicio del proyecto, no durante la pipeline. El token debe tener scopes repo y read:org"
+    },
+    {
+      "id": "L-004",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "PR incluyó archivos de pipeline no relacionados (PRD, plan técnico)",
+      "fix": "Eliminar archivos .opencode/current_prd.md y .opencode/technical_plan.md del commit",
+      "rule": "Al hacer commit en un feature branch, incluir solo archivos del feature. No subir artefactos de la pipeline (PRDs, planes técnicos)"
+    },
+    {
+      "id": "L-005",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "PR incluyó cambios en opencode.json y scripts/seed-rooms.ts que no son parte del feature",
+      "fix": "Revertir archivos no relacionados a su versión de main antes del PR",
+      "rule": "Usar git checkout main -- <file> para revertir archivos que no forman parte del feature actual"
+    },
+    {
+      "id": "L-006",
+      "date": "2026-05-21",
+      "agent": "developer-agent",
+      "issue": "Componente usaba function declaration en vez de arrow function",
+      "fix": "Cambiar export default function a const Component = () => ...",
+      "rule": "Usar siempre arrow functions para componentes en React Native"
     }
   ]
 }
