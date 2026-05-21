@@ -100,17 +100,15 @@ export function useChats() {
       return
     }
 
-    setConversations(prev =>
-      prev.map(c =>
+    let accepted: ConversationWithUser | undefined
+    setConversations(prev => {
+      accepted = prev.find(c => c.id === conversationId)
+      return prev.map(c =>
         c.id === conversationId ? { ...c, status: 'active' as const } : c
       )
-    )
-
-    const conv = conversations.find(c => c.id === conversationId)
-    if (conv) {
-      navigateToChat(conv)
-    }
-  }, [conversations, navigateToChat])
+    })
+    if (accepted) navigateToChat(accepted)
+  }, [navigateToChat])
 
   const handleDecline = useCallback(async (conversationId: string) => {
     const { error: updateError } = await supabase
