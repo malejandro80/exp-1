@@ -15,7 +15,7 @@ import {
   TAB_BAR_PADDING_BOTTOM_ANDROID,
 } from '@/constants/layout'
 
-export default function TabLayout() {
+const TabLayout = () => {
   const insets = useSafeAreaInsets()
 
   return (
@@ -70,3 +70,5 @@ export default function TabLayout() {
     </Tabs>
   )
 }
+
+export default TabLayout

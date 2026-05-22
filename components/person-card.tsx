@@ -3,7 +3,7 @@ import { TouchableOpacity, View, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Radius } from '@/constants/theme'
 import { AVATAR_SIZE, AVATAR_TEXT_SIZE } from '@/constants/layout'
-import { metersToHuman, timeAgo } from '@/lib/helpers'
+import { metersToHuman, timeAgo } from '@/utils/helpers'
 import type { PersonInRoom } from '@/lib/types'
 
 interface PersonCardProps {
@@ -11,7 +11,7 @@ interface PersonCardProps {
   onPress: (person: PersonInRoom) => void
 }
 
-export const PersonCard = memo(function PersonCard({ person, onPress }: PersonCardProps) {
+const PersonCardInner = ({ person, onPress }: PersonCardProps) => {
   return (
     <TouchableOpacity
       style={{
@@ -49,4 +49,6 @@ export const PersonCard = memo(function PersonCard({ person, onPress }: PersonCa
       <Ionicons name="chevron-forward" size={24} color={Colors.light.textMuted} />
     </TouchableOpacity>
   )
-})
+}
+
+export const PersonCard = memo(PersonCardInner)

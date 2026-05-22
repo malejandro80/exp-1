@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { View, Text } from 'react-native'
 import { Colors, Radius, Spacing } from '@/constants/theme'
-import { timeAgo } from '@/lib/helpers'
+import { timeAgo } from '@/utils/helpers'
 
 interface MessageBubbleProps {
   content: string
@@ -9,7 +9,7 @@ interface MessageBubbleProps {
   isMine: boolean
 }
 
-export const MessageBubble = memo(function MessageBubble({ content, created_at, isMine }: MessageBubbleProps) {
+const MessageBubbleInner = ({ content, created_at, isMine }: MessageBubbleProps) => {
   return (
     <View style={{
       maxWidth: '80%',
@@ -38,4 +38,6 @@ export const MessageBubble = memo(function MessageBubble({ content, created_at, 
       </Text>
     </View>
   )
-})
+}
+
+export const MessageBubble = memo(MessageBubbleInner)

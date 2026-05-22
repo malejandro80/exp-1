@@ -7,7 +7,7 @@ import { DISPLAY_NAME_MAX_LENGTH } from '@/constants/rules'
 import { styles } from './profile.styles'
 import { useProfile } from './useProfile'
 
-export default function ProfileScreen() {
+const ProfileScreen = () => {
   const { profile, nameInput, saving, error, setNameInput, upsertProfile, handleReset } = useProfile()
 
   return (
@@ -60,3 +60,5 @@ export default function ProfileScreen() {
     </SafeAreaView>
   )
 }
+
+export default ProfileScreen

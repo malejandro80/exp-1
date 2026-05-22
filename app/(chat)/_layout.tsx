@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router'
 
-export default function ChatLayout() {
+const ChatLayout = () => {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="chats" />
@@ -8,3 +8,5 @@ export default function ChatLayout() {
     </Stack>
   )
 }
+
+export default ChatLayout

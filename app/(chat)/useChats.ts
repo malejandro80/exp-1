@@ -17,7 +17,7 @@ interface ConversationWithUser extends ConversationRow {
   lastMessage: string | null
 }
 
-export function useChats() {
+export const useChats = () => {
   const { userId } = useIdentity()
   const router = useRouter()
   const [conversations, setConversations] = useState<ConversationWithUser[]>([])

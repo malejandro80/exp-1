@@ -6,7 +6,7 @@ import { useIdentity } from '@/contexts/IdentityContext'
 import { Colors, Spacing, Radius } from '@/constants/theme'
 import { DISPLAY_NAME_MAX_LENGTH } from '@/constants/rules'
 
-export default function OnboardingScreen() {
+const OnboardingScreen = () => {
   const { setDisplayName } = useIdentity()
   const [name, setName] = useState('')
 
@@ -58,6 +58,8 @@ export default function OnboardingScreen() {
     </SafeAreaView>
   )
 }
+
+export default OnboardingScreen
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.light.background },

@@ -28,7 +28,7 @@ const LocationContext = createContext<LocationState>({
 
 const UPDATE_INTERVAL = LOCATION_UPDATE_INTERVAL_MS
 
-export function LocationProvider({ children }: { children: ReactNode }) {
+export const LocationProvider = ({ children }: { children: ReactNode }) => {
   const { userId, isOnboarded } = useIdentity()
   const [latitude, setLatitude] = useState<number | null>(null)
   const [longitude, setLongitude] = useState<number | null>(null)
@@ -45,7 +45,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
 
     let watcher: Location.LocationSubscription | null = null
 
-    async function start() {
+    const start = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync()
       if (status !== 'granted') {
         setError('Location permission denied')
@@ -98,7 +98,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     }
   }, [userId, isOnboarded])
 
-  async function updateProfileLocation(id: string, lat: number, lng: number) {
+  const updateProfileLocation = async (id: string, lat: number, lng: number) => {
     await supabase.from('profiles').update({
       latitude: lat,
       longitude: lng,

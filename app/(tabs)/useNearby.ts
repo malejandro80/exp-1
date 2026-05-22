@@ -4,11 +4,11 @@ import { supabase } from '@/lib/supabase'
 import { useIdentity } from '@/contexts/IdentityContext'
 import { useLocation } from '@/contexts/LocationContext'
 import { useRoom } from '@/contexts/RoomContext'
-import { haversineDistance } from '@/lib/helpers'
+import { haversineDistance } from '@/utils/helpers'
 import { STALE_PROFILE_MINUTES, MS_PER_MINUTE } from '@/constants/rules'
 import type { PersonInRoom, Room } from '@/lib/types'
 
-export function useNearby() {
+export const useNearby = () => {
   const { userId, displayName } = useIdentity()
   const { latitude, longitude, gpsReady } = useLocation()
   const { currentRoom, nearbyRooms, loading: roomLoading, isJoined, joinRoom, leaveRoom } = useRoom()

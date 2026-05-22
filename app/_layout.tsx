@@ -9,7 +9,7 @@ import { IdentityProvider } from '@/contexts/IdentityContext'
 import { LocationProvider } from '@/contexts/LocationContext'
 import { RoomProvider } from '@/contexts/RoomContext'
 
-function RootScreens() {
+const RootScreens = () => {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
@@ -20,7 +20,7 @@ function RootScreens() {
   )
 }
 
-export default function RootLayout() {
+const RootLayout = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false)
 
   useEffect(() => {
@@ -48,3 +48,5 @@ export default function RootLayout() {
     </IdentityProvider>
   )
 }
+
+export default RootLayout

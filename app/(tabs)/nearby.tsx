@@ -5,7 +5,7 @@ import {
 import MapView, { Marker, Callout, Circle } from 'react-native-maps'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
-import { metersToHuman, haversineDistance } from '@/lib/helpers'
+import { metersToHuman, haversineDistance } from '@/utils/helpers'
 import { MESSAGE_MAX_LENGTH } from '@/constants/rules'
 import {
   ITEM_HEIGHT,
@@ -19,7 +19,7 @@ import { PersonCard } from '@/components/person-card'
 import { styles } from './nearby.styles'
 import { useNearby } from './useNearby'
 
-export default function NearbyScreen() {
+const NearbyScreen = () => {
   const {
     latitude,
     longitude,
@@ -259,3 +259,5 @@ export default function NearbyScreen() {
     </View>
   )
 }
+
+export default NearbyScreen

@@ -71,6 +71,22 @@
       "issue": "Skills locales (git-flow, supabase) obsoletos al migrar a MCP servers directos",
       "fix": "Eliminar skills git-flow y supabase de .opencode/skills/. Supabase y GitHub ahora se acceden via MCP",
       "rule": "Preferir MCP servers sobre skills locales cuando exista un MCP server oficial. Skills locales se usan para metodología/flujo, MCP para acceso directo a APIs externas"
+    },
+    {
+      "id": "L-010",
+      "date": "2026-05-22",
+      "agent": "all",
+      "issue": "Utility functions estaban en lib/helpers.ts con function declarations en vez de arrow functions",
+      "fix": "Mover a utils/helpers.ts, convertir a arrow functions, actualizar todos los imports",
+      "rule": "Las utility functions van en utils/ y deben declararse como arrow functions (const fn = () => {...}). No usar function declarations. Actualizar todos los imports al mover archivos"
+    },
+    {
+      "id": "L-010",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Componentes y funciones usaban function declaration en vez de arrow functions",
+      "fix": "Convertir todas las function declarations a arrow functions en components/, app/, contexts/, hooks/",
+      "rule": "Usar siempre arrow functions para TODAS las funciones (componentes, hooks, helpers, context providers). Nunca usar function declarations (function foo(){}). Para default exports: asignar a const y luego export default."
     }
   ]
 }

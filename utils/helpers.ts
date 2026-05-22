@@ -13,7 +13,9 @@ import {
   HOURS_PER_DAY,
 } from '@/constants/rules'
 
-export function geohashEncode(lat: number, lng: number, precision = 6): string {
+const toRad = (deg: number): number => (deg * Math.PI) / 180
+
+export const geohashEncode = (lat: number, lng: number, precision = 6): string => {
   let minLat = LATITUDE_MIN, maxLat = LATITUDE_MAX
   let minLng = LONGITUDE_MIN, maxLng = LONGITUDE_MAX
   let hash = ''
@@ -39,10 +41,10 @@ export function geohashEncode(lat: number, lng: number, precision = 6): string {
   return hash
 }
 
-export function haversineDistance(
+export const haversineDistance = (
   lat1: number, lng1: number,
   lat2: number, lng2: number
-): number {
+): number => {
   const dLat = toRad(lat2 - lat1)
   const dLng = toRad(lng2 - lng1)
   const a = Math.sin(dLat / 2) ** 2 +
@@ -50,17 +52,13 @@ export function haversineDistance(
   return EARTH_RADIUS_METERS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-function toRad(deg: number): number {
-  return (deg * Math.PI) / 180
-}
-
-export function metersToHuman(meters: number): string {
+export const metersToHuman = (meters: number): string => {
   if (meters < CLOSE_DISTANCE_METERS) return 'a few meters'
   if (meters < MEDIUM_DISTANCE_METERS) return `${Math.round(meters / 10) * 10}m`
   return `${(meters / 1000).toFixed(1)}km`
 }
 
-export function timeAgo(dateStr: string): string {
+export const timeAgo = (dateStr: string): string => {
   const now = Date.now()
   const then = new Date(dateStr).getTime()
   const diff = now - then

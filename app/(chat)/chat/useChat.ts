@@ -18,7 +18,7 @@ interface OtherProfile {
   avatar_url: string | null
 }
 
-export function useChat() {
+export const useChat = () => {
   const { id: conversationId, otherUserId } = useLocalSearchParams<{
     id: string
     otherUserId: string

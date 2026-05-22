@@ -1,7 +1,7 @@
 import { Redirect } from 'expo-router'
 import { useIdentity } from '@/contexts/IdentityContext'
 
-export default function Index() {
+const Index = () => {
   const { isOnboarded } = useIdentity()
 
   if (!isOnboarded) {
@@ -10,3 +10,5 @@ export default function Index() {
 
   return <Redirect href="/(tabs)/nearby" />
 }
+
+export default Index

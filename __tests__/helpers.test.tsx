@@ -1,4 +1,4 @@
-import { geohashEncode, haversineDistance, metersToHuman, timeAgo } from '@/lib/helpers'
+import { geohashEncode, haversineDistance, metersToHuman, timeAgo } from '@/utils/helpers'
 
 describe('geohashEncode', () => {
   it('encodes a known location correctly', () => {

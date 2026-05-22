@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
-import { haversineDistance } from '@/lib/helpers'
+import { haversineDistance } from '@/utils/helpers'
 import { useIdentity } from './IdentityContext'
 import { useLocation } from './LocationContext'
 import { SEARCH_RADIUS_METERS } from '@/constants/rules'
@@ -26,7 +26,7 @@ const RoomContext = createContext<RoomState>({
 
 const SEARCH_RADIUS = SEARCH_RADIUS_METERS
 
-export function RoomProvider({ children }: { children: ReactNode }) {
+export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const { userId, isOnboarded } = useIdentity()
   const { latitude, longitude } = useLocation()
   const [allRooms, setAllRooms] = useState<Room[]>([])

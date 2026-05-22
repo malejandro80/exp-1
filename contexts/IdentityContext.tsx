@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from '@/lib/supabase'
 import { USER_ID_KEY, DISPLAY_NAME_KEY } from '@/constants/storage'
 
-function generateId(): string {
+const generateId = (): string => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
@@ -26,7 +26,7 @@ const IdentityContext = createContext<IdentityState>({
   resetIdentity: async () => {},
 })
 
-export function IdentityProvider({ children }: { children: ReactNode }) {
+export const IdentityProvider = ({ children }: { children: ReactNode }) => {
   const [userId, setUserId] = useState<string | null>(null)
   const [displayName, setDisplayNameState] = useState('')
   const [isOnboarded, setIsOnboarded] = useState(false)

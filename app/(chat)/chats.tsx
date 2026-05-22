@@ -7,7 +7,7 @@ import { ChatCard } from '@/components/chat-card'
 import { styles } from './chats.styles'
 import { useChats } from './useChats'
 
-export default function ChatsScreen() {
+const ChatsScreen = () => {
   const { conversations, loading, error, navigateToChat, userId, handleAccept, handleDecline } = useChats()
 
   if (loading) {
@@ -63,3 +63,5 @@ export default function ChatsScreen() {
     </View>
   )
 }
+
+export default ChatsScreen

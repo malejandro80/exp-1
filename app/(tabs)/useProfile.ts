@@ -13,7 +13,7 @@ interface ProfileRow {
   created_at: string
 }
 
-export function useProfile() {
+export const useProfile = () => {
   const { userId, displayName, setDisplayName, resetIdentity } = useIdentity()
   const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [nameInput, setNameInput] = useState(displayName)

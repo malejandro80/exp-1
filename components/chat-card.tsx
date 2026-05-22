@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { TouchableOpacity, View, Text } from 'react-native'
 import { Colors, Spacing, Radius } from '@/constants/theme'
 import { AVATAR_SIZE, AVATAR_TEXT_SIZE } from '@/constants/layout'
-import { timeAgo } from '@/lib/helpers'
+import { timeAgo } from '@/utils/helpers'
 
 interface ChatCardProps {
   displayName: string | null
@@ -15,7 +15,7 @@ interface ChatCardProps {
   onDecline?: () => void
 }
 
-export const ChatCard = memo(function ChatCard({
+const ChatCardInner = ({
   displayName,
   lastMessage,
   lastMessageAt,
@@ -24,7 +24,7 @@ export const ChatCard = memo(function ChatCard({
   onPress,
   onAccept,
   onDecline,
-}: ChatCardProps) {
+}: ChatCardProps) => {
   const isPending = status === 'pending'
 
   return (
@@ -121,4 +121,6 @@ export const ChatCard = memo(function ChatCard({
       )}
     </TouchableOpacity>
   )
-})
+}
+
+export const ChatCard = memo(ChatCardInner)

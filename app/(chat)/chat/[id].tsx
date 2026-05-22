@@ -9,7 +9,7 @@ import { MessageBubble } from '@/components/message-bubble'
 import { styles } from './[id].styles'
 import { useChat } from './useChat'
 
-export default function ChatScreen() {
+const ChatScreen = () => {
   const { userId, messages, input, otherUser, loading, error, flatListRef, setInput, sendMessage, showActions, conversationStatus, isRecipient, handleAcceptRequest, handleDeclineRequest } = useChat()
 
   return (
@@ -117,3 +117,5 @@ export default function ChatScreen() {
     </KeyboardAvoidingView>
   )
 }
+
+export default ChatScreen
