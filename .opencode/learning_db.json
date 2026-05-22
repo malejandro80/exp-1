@@ -75,18 +75,74 @@
     {
       "id": "L-010",
       "date": "2026-05-22",
-      "agent": "all",
-      "issue": "Utility functions estaban en lib/helpers.ts con function declarations en vez de arrow functions",
-      "fix": "Mover a utils/helpers.ts, convertir a arrow functions, actualizar todos los imports",
-      "rule": "Las utility functions van en utils/ y deben declararse como arrow functions (const fn = () => {...}). No usar function declarations. Actualizar todos los imports al mover archivos"
-    },
-    {
-      "id": "L-010",
-      "date": "2026-05-22",
       "agent": "jarvis",
       "issue": "Componentes y funciones usaban function declaration en vez de arrow functions",
-      "fix": "Convertir todas las function declarations a arrow functions en components/, app/, contexts/, hooks/",
+      "fix": "Convertir todas las function declarations a arrow functions en components/, app/, contexts/, hooks/, utils/",
       "rule": "Usar siempre arrow functions para TODAS las funciones (componentes, hooks, helpers, context providers). Nunca usar function declarations (function foo(){}). Para default exports: asignar a const y luego export default."
+    },
+    {
+      "id": "L-011",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Feature requests sin branch dedicado pueden causar conflictos en main",
+      "fix": "Detectar prompts que empiezan con 'feat' y crear una rama feature/<desc> antes de implementar",
+      "rule": "Cuando un prompt empiece con 'feat', crear automáticamente una nueva rama desde main antes de cualquier implementación. El nombre de la rama debe ser feature/<descripcion-corta>. No desarrollar nunca en main."
+    },
+    {
+      "id": "L-012",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "PRs auto-mergeados sin revisión humana pueden introducir bugs o código no intencionado",
+      "fix": "Después de completar la feature en la rama, abrir un Pull Request con draft=false y asignar reviewer humano",
+      "rule": "Después de implementar y verificar una feature (verification-before-completion), abrir un Pull Request a main. El PR debe marcarse como listo para revisión (no draft), con descripción clara de los cambios. No mergear automáticamente — requiere revisión manual."
+    },
+    {
+      "id": "L-013",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Código asíncrono usaba .then() en vez de async/await, mezclando estilos",
+      "fix": "Convertir todos los .then() a async/await en useProfile.ts, RoomContext.tsx, _layout.tsx",
+      "rule": "Todo código asíncrono debe usar async/await. Nunca usar .then(). Para efectos secundarios en useEffect, crear una función async interna y ejecutarla inmediatamente."
+    },
+    {
+      "id": "L-014",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Llamadas a Supabase estaban dispersas por componentes, hooks y contexts, sin capa de abstracción",
+      "fix": "Crear services/ con servicios por dominio (profile, room, conversation, message, block, report) y un facade (services/index.ts) que exporta un objeto 'api' unificado",
+      "rule": "Todas las llamadas a Supabase deben pasar por la capa services/ con el facade 'api'. Los componentes y hooks nunca importan supabase directamente, solo importan { api } from '@/services'. Los servicios se organizan por dominio (profile, room, conversation, message, report, block). El facade expone un objeto api con sub-propiedades por dominio."
+    },
+    {
+      "id": "L-015",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Servicios sin try-catch pueden lanzar excepciones no controladas que rompen la UI",
+      "fix": "Envolver cada función async de services/ en try-catch, loguear el error con prefijo [serviceName.methodName] y retornar un valor seguro (null, false, [])",
+      "rule": "Toda función async en services/ debe estar envuelta en try-catch. El catch debe loguear con console.error usando el prefijo [serviceName.methodName] y retornar un valor default seguro (null, false, [], void) para que la UI nunca se rompa por un error de API."
+    },
+    {
+      "id": "L-016",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "El componente TabLayout tenía lógica inline (ternarios con Platform.OS e insets.bottom) dentro del objeto screenOptions en JSX",
+      "fix": "Extraer la lógica a variables computadas (isAndroid, tabPaddingBottom, tabHeight) antes del return en el cuerpo del componente",
+      "rule": "Los componentes React no deben contener lógica (operadores ternarios, condicionales, cálculos) inline dentro del JSX. Toda la lógica debe extraerse a variables computadas en el cuerpo del componente, antes del return."
+    },
+    {
+      "id": "L-017",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "chat-card.tsx, person-card.tsx, message-bubble.tsx, hello-wave.tsx tenían todos los estilos inline en lugar de un archivo de estilos dedicado",
+      "fix": "Crear <component>.styles.ts para cada componente, mover todos los estilos a StyleSheet.create(), importarlos en el componente",
+      "rule": "Cada componente debe tener un archivo de estilos dedicado <nombre>.styles.ts con StyleSheet.create(). Ningún componente debe contener objetos style={{}} inline. Para estilos dinámicos (condicionales), usar arreglos style={[styles.base, condition && styles.variant]} o ternarios entre estilos pre-definidos."
+    },
+    {
+      "id": "L-018",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Varios useEffect tenían lógica inline (funciones async, setTimeout, condicionales) declarada dentro del callback del efecto",
+      "fix": "Extraer toda la lógica inline a funciones nombradas declaradas al inicio del hook (después de los estados/refs, antes de los useEffects), usando closure en lugar de parámetros. Las dependencias reales (userId, etc.) van en el array de deps del useEffect, no la función contenedora. Suprimir eslint-disable-next-line react-hooks/exhaustive-deps cuando sea necesario.",
+      "rule": "En hooks/contextos, toda la lógica dentro de useEffect debe extraerse a funciones nombradas declaradas al inicio del hook (después de estados/refs, antes de los useEffects), usando closure para acceder a los setters/valores. No usar IIFEs ni lógica inline en el callback del useEffect. Las funciones extraídas NO van en el array de dependencias; las dependencias reales (userId, conversationId, etc.) son las que controlan la re-ejecución del efecto. Suprimir la advertencia de exhaustive-deps con eslint-disable-next-line."
     }
   ]
 }

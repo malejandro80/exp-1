@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react'
 import * as Location from 'expo-location'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/services'
 import { useIdentity } from './IdentityContext'
 import {
   LOCATION_UPDATE_INTERVAL_MS,
@@ -99,11 +99,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
   }, [userId, isOnboarded])
 
   const updateProfileLocation = async (id: string, lat: number, lng: number) => {
-    await supabase.from('profiles').update({
-      latitude: lat,
-      longitude: lng,
-      last_seen: new Date().toISOString(),
-    } as any).eq('id', id)
+    await api.profiles.updateLocation(id, lat, lng)
   }
 
   return (

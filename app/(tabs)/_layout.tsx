@@ -18,6 +18,14 @@ import {
 const TabLayout = () => {
   const insets = useSafeAreaInsets()
 
+  const isAndroid = Platform.OS === 'android'
+  const tabPaddingBottom = isAndroid
+    ? TAB_BAR_PADDING_BOTTOM_ANDROID + insets.bottom
+    : TAB_BAR_PADDING_BOTTOM_IOS
+  const tabHeight = isAndroid
+    ? TAB_BAR_HEIGHT_ANDROID + insets.bottom
+    : TAB_BAR_HEIGHT_IOS
+
   return (
     <Tabs
       screenOptions={{
@@ -26,8 +34,8 @@ const TabLayout = () => {
         tabBarInactiveTintColor: Colors.light.tabIconDefault,
         tabBarStyle: {
           ...tabBarStyle,
-          paddingBottom: Platform.OS === 'android' ? TAB_BAR_PADDING_BOTTOM_ANDROID + insets.bottom : TAB_BAR_PADDING_BOTTOM_IOS,
-          height: Platform.OS === 'android' ? TAB_BAR_HEIGHT_ANDROID + insets.bottom : TAB_BAR_HEIGHT_IOS,
+          paddingBottom: tabPaddingBottom,
+          height: tabHeight,
         },
         tabBarIconStyle: {
           marginBottom: TAB_BAR_ICON_MARGIN_BOTTOM

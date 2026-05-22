@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'expo-router'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/services'
 import { useIdentity } from '@/contexts/IdentityContext'
 import { useLocation } from '@/contexts/LocationContext'
 import { useRoom } from '@/contexts/RoomContext'
@@ -29,27 +29,12 @@ export const useNearby = () => {
       setError(null)
       const staleTime = new Date(Date.now() - STALE_PROFILE_MINUTES * MS_PER_MINUTE).toISOString()
 
-      const [profilesResult, blocksResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('*')
-          .neq('id', userId)
-          .gte('last_seen', staleTime)
-          .not('latitude', 'is', null)
-          .not('longitude', 'is', null),
-        supabase
-          .from('blocks')
-          .select('blocked_id')
-          .eq('blocker_id', userId),
+      const [recentProfiles, blockedSet] = await Promise.all([
+        api.profiles.getRecentProfiles(staleTime, userId),
+        api.blocks.getBlockedIds(userId),
       ])
 
-      if (profilesResult.error) throw profilesResult.error
-
-      const blockedSet = new Set(
-        (blocksResult.data as any[])?.map((b: any) => b.blocked_id) || []
-      )
-
-      const inRoom: PersonInRoom[] = ((profilesResult.data as any[]) || [])
+      const inRoom: PersonInRoom[] = recentProfiles
         .map((p: any) => ({
           ...p,
           distance_meters: haversineDistance(
@@ -70,13 +55,18 @@ export const useNearby = () => {
     }
   }, [currentRoom, userId])
 
-  useEffect(() => {
+  const handleRoomChange = () => {
     if (currentRoom) {
       fetchPeopleInRoom()
     } else {
       setLoading(false)
     }
-  }, [fetchPeopleInRoom, currentRoom])
+  }
+
+  useEffect(() => {
+    handleRoomChange()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRoom, fetchPeopleInRoom])
 
   const handleTapPerson = useCallback((person: PersonInRoom) => {
     setRequestTarget(person)
@@ -93,57 +83,29 @@ export const useNearby = () => {
     const user2 = me < them ? them : me
 
     try {
-      await supabase.from('profiles').upsert({
+      await api.profiles.upsert({
         id: me,
         display_name: displayName || 'User',
         last_seen: new Date().toISOString(),
-      } as any)
+      })
 
-      const { data: existing } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('participant1_id', user1)
-        .eq('participant2_id', user2)
-        .maybeSingle()
-
+      const existingId = await api.conversations.findExisting(user1, user2)
       let conversationId: string
 
-      if (existing) {
-        conversationId = (existing as any).id
-        await supabase
-          .from('conversations')
-          .update({ status: 'pending', last_message_at: new Date().toISOString() } as any)
-          .eq('id', conversationId)
+      if (existingId) {
+        conversationId = existingId
+        await api.conversations.updateStatus(conversationId, 'pending')
+        await api.conversations.updateLastMessageAt(conversationId)
       } else {
-        const { data: newConv, error } = await supabase
-          .from('conversations')
-          .insert({
-            participant1_id: user1,
-            participant2_id: user2,
-            status: 'pending',
-          } as any)
-          .select('id')
-          .single()
-
-        if (error) {
-          console.error('Failed to create conversation:', error)
+        const newId = await api.conversations.create(user1, user2)
+        if (!newId) {
           setSending(false)
           return
         }
-        conversationId = (newConv as any).id
+        conversationId = newId
       }
 
-      const { error: msgError } = await supabase.from('messages').insert({
-        conversation_id: conversationId,
-        sender_id: me,
-        content: requestMessage.trim(),
-      } as any)
-
-      if (msgError) {
-        console.error('Failed to insert message:', msgError)
-        setSending(false)
-        return
-      }
+      await api.messages.send(conversationId, me, requestMessage.trim())
 
       setRequestTarget(null)
       setRequestMessage('')

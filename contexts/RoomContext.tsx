@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/services'
 import { haversineDistance } from '@/utils/helpers'
 import { useIdentity } from './IdentityContext'
 import { useLocation } from './LocationContext'
@@ -35,16 +35,13 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [nearbyRooms, setNearbyRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!isOnboarded || !userId) return
+  const fetchRooms = async () => {
+    const rooms = await api.rooms.getAll()
+    setAllRooms(rooms)
+    setLoading(false)
+  }
 
-    supabase.from('rooms').select('*').then(({ data }) => {
-      setAllRooms((data as unknown as Room[]) || [])
-      setLoading(false)
-    })
-  }, [isOnboarded, userId])
-
-  useEffect(() => {
+  const updateNearbyRooms = () => {
     if (!latitude || !longitude || allRooms.length === 0) return
 
     let found: Room | null = null
@@ -62,6 +59,15 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     setGpsRoom(found)
     setNearbyRooms(nearby)
+  }
+
+  useEffect(() => {
+    if (!isOnboarded || !userId) return
+    fetchRooms()
+  }, [isOnboarded, userId])
+
+  useEffect(() => {
+    updateNearbyRooms()
   }, [latitude, longitude, allRooms])
 
   // GPS room takes priority over joined room

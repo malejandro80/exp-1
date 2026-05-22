@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/services'
 import { USER_ID_KEY, DISPLAY_NAME_KEY } from '@/constants/storage'
 
 const generateId = (): string => {
@@ -32,35 +32,37 @@ export const IdentityProvider = ({ children }: { children: ReactNode }) => {
   const [isOnboarded, setIsOnboarded] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const storedId = await AsyncStorage.getItem(USER_ID_KEY)
-        const storedName = await AsyncStorage.getItem(DISPLAY_NAME_KEY)
+  const loadStoredIdentity = async () => {
+    try {
+      const storedId = await AsyncStorage.getItem(USER_ID_KEY)
+      const storedName = await AsyncStorage.getItem(DISPLAY_NAME_KEY)
 
-        if (storedId && storedName) {
-          setUserId(storedId)
-          setDisplayNameState(storedName)
-          setIsOnboarded(true)
-        }
-      } catch {
-        // Fresh start
-      } finally {
-        setLoading(false)
+      if (storedId && storedName) {
+        setUserId(storedId)
+        setDisplayNameState(storedName)
+        setIsOnboarded(true)
       }
-    })()
+    } catch {
+      // Fresh start
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadStoredIdentity()
   }, [])
 
   const setDisplayName = async (name: string) => {
     const id = generateId()
     // Create profile in Supabase BEFORE triggering LocationContext
-    const { error } = await supabase.from('profiles').upsert({
+    const ok = await api.profiles.upsert({
       id,
       display_name: name,
       last_seen: new Date().toISOString(),
-    } as any)
-    if (error) {
-      console.error('Failed to create profile:', error.message)
+    })
+    if (!ok) {
+      console.error('Failed to create profile')
     }
     // Then set state (react hooks fire LocationContext effect)
     setUserId(id)

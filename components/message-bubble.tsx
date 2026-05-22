@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { View, Text } from 'react-native'
-import { Colors, Radius, Spacing } from '@/constants/theme'
 import { timeAgo } from '@/utils/helpers'
+import { styles } from './message-bubble.styles'
 
 interface MessageBubbleProps {
   content: string
@@ -11,29 +11,11 @@ interface MessageBubbleProps {
 
 const MessageBubbleInner = ({ content, created_at, isMine }: MessageBubbleProps) => {
   return (
-    <View style={{
-      maxWidth: '80%',
-      padding: Spacing.md,
-      borderRadius: Radius.lg,
-      marginBottom: Spacing.sm,
-      backgroundColor: isMine ? Colors.light.myMessageBg : Colors.light.theirMessageBg,
-      alignSelf: isMine ? 'flex-end' : 'flex-start',
-      borderBottomRightRadius: isMine ? Radius.sm : Radius.lg,
-      borderBottomLeftRadius: isMine ? Radius.lg : Radius.sm,
-    }}>
-      <Text style={{
-        fontSize: 15,
-        lineHeight: 20,
-        color: isMine ? '#fff' : Colors.light.text,
-      }}>
+    <View style={isMine ? styles.bubbleMine : styles.bubbleTheirs}>
+      <Text style={isMine ? styles.messageTextMine : styles.messageTextTheirs}>
         {content}
       </Text>
-      <Text style={{
-        fontSize: 11,
-        marginTop: Spacing.xs,
-        color: isMine ? 'rgba(255,255,255,0.6)' : Colors.light.textTertiary,
-        textAlign: 'right',
-      }}>
+      <Text style={isMine ? styles.timeMine : styles.timeTheirs}>
         {timeAgo(created_at)}
       </Text>
     </View>

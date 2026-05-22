@@ -6,6 +6,7 @@ import * as Font from 'expo-font'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
 import { IdentityProvider } from '@/contexts/IdentityContext'
+import { styles } from './_layout.styles'
 import { LocationProvider } from '@/contexts/LocationContext'
 import { RoomProvider } from '@/contexts/RoomContext'
 
@@ -24,14 +25,18 @@ const RootLayout = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false)
 
   useEffect(() => {
-    Font.loadAsync({
-      ...Ionicons.font,
-    }).then(() => setFontsLoaded(true))
+    const loadFonts = async () => {
+      await Font.loadAsync({
+        ...Ionicons.font,
+      })
+      setFontsLoaded(true)
+    }
+    loadFonts()
   }, [])
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.light.background }}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.light.brand} />
       </View>
     )

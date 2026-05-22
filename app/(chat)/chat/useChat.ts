@@ -1,9 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { FlatList, Alert } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/services'
 import { useIdentity } from '@/contexts/IdentityContext'
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 
 interface ChatMessage {
   id: number
@@ -32,79 +31,57 @@ export const useChat = () => {
   const [conversationStatus, setConversationStatus] = useState<'pending' | 'active'>('active')
   const flatListRef = useRef<FlatList>(null)
 
+  const loadConversationData = async () => {
+    if (!conversationId || !otherUserId) return
+    try {
+      const [messages, otherProfile, conversationStatusResult] = await Promise.all([
+        api.messages.listByConversation(conversationId),
+        api.profiles.getDisplayName(otherUserId),
+        api.conversations.getStatus(conversationId),
+      ])
+
+      setMessages(messages)
+      setOtherUser(otherProfile)
+      if (conversationStatusResult) {
+        setConversationStatus(conversationStatusResult)
+      }
+    } catch (err) {
+      console.error('Failed to load messages:', err)
+      setError('Could not load messages.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const scrollToBottomDelayed = () => {
+    const id = setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100)
+    return () => clearTimeout(id)
+  }
+
   useEffect(() => {
     if (!conversationId || !otherUserId) return
 
     setLoading(true)
     setError(null)
 
-    const load = async () => {
-      try {
-        const [messagesResult, profileResult, convResult] = await Promise.all([
-          supabase
-            .from('messages')
-            .select('*')
-            .eq('conversation_id', conversationId)
-            .order('created_at', { ascending: false })
-            .limit(50),
-          supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('id', otherUserId)
-            .single(),
-          supabase
-            .from('conversations')
-            .select('status')
-            .eq('id', conversationId)
-            .single(),
-        ])
+    loadConversationData()
 
-        if (messagesResult.error) throw messagesResult.error
-
-        setMessages(((messagesResult.data as any[]) || []).reverse())
-        setOtherUser(profileResult.data as OtherProfile | null)
-        if (convResult.data) {
-          setConversationStatus((convResult.data as any).status as 'pending' | 'active')
-        }
-      } catch (err) {
-        console.error('Failed to load messages:', err)
-        setError('Could not load messages.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    load()
-
-    const channel = supabase
-      .channel(`messages:${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload: RealtimePostgresChangesPayload<{ [key: string]: unknown }>) => {
-          const newMsg = payload.new as unknown as ChatMessage
-          setMessages(prev => {
-            if (prev.some(m => m.id === newMsg.id)) return prev
-            return [...prev, newMsg]
-          })
-        }
-      )
-      .subscribe()
+    const unsubscribe = api.messages.subscribeToNewMessages(conversationId, (newMsg) => {
+      setMessages(prev => {
+        if (prev.some(m => m.id === newMsg.id)) return prev
+        return [...prev, newMsg]
+      })
+    })
 
     return () => {
-      supabase.removeChannel(channel)
+      unsubscribe()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, otherUserId])
 
   useEffect(() => {
     if (messages.length > 0) {
-      const id = setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100)
-      return () => clearTimeout(id)
+      return scrollToBottomDelayed()
     }
   }, [messages.length])
 
@@ -115,15 +92,8 @@ export const useChat = () => {
     setInput('')
 
     await Promise.all([
-      supabase.from('messages').insert({
-        conversation_id: conversationId,
-        sender_id: userId,
-        content,
-      } as any),
-      supabase
-        .from('conversations')
-        .update({ last_message_at: new Date().toISOString() } as any)
-        .eq('id', conversationId),
+      api.messages.send(conversationId, userId, content),
+      api.conversations.updateLastMessageAt(conversationId),
     ])
   }, [input, conversationId, userId])
 
@@ -138,10 +108,7 @@ export const useChat = () => {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Block', style: 'destructive', onPress: async () => {
-            await supabase.from('blocks').insert({
-              blocker_id: userId,
-              blocked_id: otherUserId,
-            } as any)
+            await api.blocks.blockUser(userId, otherUserId)
             Alert.alert('Blocked', 'User has been blocked.')
             router.back()
           },
@@ -153,10 +120,7 @@ export const useChat = () => {
   const handleReport = useCallback(() => {
     if (!userId || !otherUserId) return
     const submitReport = async () => {
-      await supabase.from('reports').insert({
-        reporter_id: userId,
-        reported_id: otherUserId,
-      } as any)
+      await api.reports.reportUser(userId, otherUserId)
       Alert.alert('Reported', 'Thank you. We will review this report.')
     }
     submitReport()
@@ -171,10 +135,7 @@ export const useChat = () => {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Remove', style: 'destructive', onPress: async () => {
-            await supabase.from('blocks').insert({
-              blocker_id: userId,
-              blocked_id: otherUserId,
-            } as any)
+            await api.blocks.blockUser(userId, otherUserId)
             Alert.alert('Removed', 'User has been removed from your radar.')
             router.back()
           },
@@ -185,12 +146,9 @@ export const useChat = () => {
 
   const handleAcceptRequest = useCallback(async () => {
     if (!conversationId) return
-    const { error } = await supabase
-      .from('conversations')
-      .update({ status: 'active' } as any)
-      .eq('id', conversationId)
-    if (error) {
-      console.error('Failed to accept request:', error)
+    const ok = await api.conversations.updateStatus(conversationId, 'active')
+    if (!ok) {
+      console.error('Failed to accept request')
       return
     }
     setConversationStatus('active')
@@ -198,10 +156,7 @@ export const useChat = () => {
 
   const handleDeclineRequest = useCallback(async () => {
     if (!conversationId) return
-    await supabase
-      .from('conversations')
-      .update({ status: 'declined' } as any)
-      .eq('id', conversationId)
+    await api.conversations.updateStatus(conversationId, 'declined')
     router.back()
   }, [conversationId])
 

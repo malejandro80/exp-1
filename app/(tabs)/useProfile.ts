@@ -1,6 +1,8 @@
+/** @format */
+
 import { useEffect, useState } from 'react'
 import { Alert } from 'react-native'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/services'
 import { useIdentity } from '@/contexts/IdentityContext'
 
 interface ProfileRow {
@@ -20,33 +22,33 @@ export const useProfile = () => {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchProfile = async () => {
     if (!userId) return
-    supabase.from('profiles').select('*').eq('id', userId).single()
-      .then(({ data, error: fetchError }) => {
-        if (fetchError) {
-          setError('Could not load profile.')
-          return
-        }
-        const d = data as ProfileRow | null
-        if (d) {
-          setProfile(d)
-          setNameInput(d.display_name || displayName)
-        }
-      })
+    const profile = await api.profiles.get(userId)
+    if (!profile) {
+      setError('Could not load profile.')
+      return
+    }
+    setProfile(profile)
+    setNameInput(profile.display_name || '')
+  }
+
+  useEffect(() => {
+    fetchProfile()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, displayName])
 
   const upsertProfile = async () => {
     if (!userId || !nameInput.trim()) return
     setSaving(true)
     setError(null)
-    const { error: upsertError } = await supabase.from('profiles').upsert({
+    const ok = await api.profiles.upsert({
       id: userId,
       display_name: nameInput.trim(),
-      last_seen: new Date().toISOString(),
-    } as any)
+      last_seen: new Date().toISOString()
+    })
     setSaving(false)
-    if (upsertError) {
+    if (!ok) {
       setError('Failed to save profile.')
       return
     }
@@ -60,7 +62,7 @@ export const useProfile = () => {
       'This will delete your profile and create a new anonymous identity. Your chats will be lost.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Reset', style: 'destructive', onPress: resetIdentity },
+        { text: 'Reset', style: 'destructive', onPress: resetIdentity }
       ]
     )
   }
@@ -72,6 +74,6 @@ export const useProfile = () => {
     error,
     setNameInput,
     upsertProfile,
-    handleReset,
+    handleReset
   }
 }
