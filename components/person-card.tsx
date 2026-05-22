@@ -1,7 +1,8 @@
 import { memo } from 'react'
 import { TouchableOpacity, View, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { Colors } from '@/constants/theme'
+import { Colors, Radius } from '@/constants/theme'
+import { AVATAR_SIZE, AVATAR_TEXT_SIZE } from '@/constants/layout'
 import { metersToHuman, timeAgo } from '@/lib/helpers'
 import type { PersonInRoom } from '@/lib/types'
 
@@ -26,14 +27,14 @@ export const PersonCard = memo(function PersonCard({ person, onPress }: PersonCa
       onPress={() => onPress(person)}
     >
       <View style={{
-        width: 44,
-        height: 44,
-        borderRadius: 9999,
+        width: AVATAR_SIZE,
+        height: AVATAR_SIZE,
+        borderRadius: Radius.full,
         backgroundColor: Colors.light.brand,
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-        <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
+        <Text style={{ color: '#fff', fontSize: AVATAR_TEXT_SIZE, fontWeight: '700' }}>
           {(person.display_name || '?')[0].toUpperCase()}
         </Text>
       </View>

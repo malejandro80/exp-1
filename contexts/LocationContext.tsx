@@ -2,6 +2,11 @@ import { createContext, useContext, useEffect, useState, useRef, type ReactNode 
 import * as Location from 'expo-location'
 import { supabase } from '@/lib/supabase'
 import { useIdentity } from './IdentityContext'
+import {
+  LOCATION_UPDATE_INTERVAL_MS,
+  LOCATION_WATCH_DISTANCE_INTERVAL,
+  LOCATION_WATCH_TIME_INTERVAL,
+} from '@/constants/rules'
 
 interface LocationState {
   latitude: number | null
@@ -21,7 +26,7 @@ const LocationContext = createContext<LocationState>({
   error: null,
 })
 
-const UPDATE_INTERVAL = 30000
+const UPDATE_INTERVAL = LOCATION_UPDATE_INTERVAL_MS
 
 export function LocationProvider({ children }: { children: ReactNode }) {
   const { userId, isOnboarded } = useIdentity()
@@ -61,8 +66,8 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       watcher = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
-          distanceInterval: 3,
-          timeInterval: 5000,
+          distanceInterval: LOCATION_WATCH_DISTANCE_INTERVAL,
+          timeInterval: LOCATION_WATCH_TIME_INTERVAL,
           mayShowUserSettingsDialog: true,
         },
         (loc) => {

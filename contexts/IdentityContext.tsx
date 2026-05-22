@@ -1,9 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from '@/lib/supabase'
-
-const USER_ID_KEY = '@nearby/user_id'
-const DISPLAY_NAME_KEY = '@nearby/display_name'
+import { USER_ID_KEY, DISPLAY_NAME_KEY } from '@/constants/storage'
 
 function generateId(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -56,11 +54,14 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
   const setDisplayName = async (name: string) => {
     const id = generateId()
     // Create profile in Supabase BEFORE triggering LocationContext
-    await supabase.from('profiles').upsert({
+    const { error } = await supabase.from('profiles').upsert({
       id,
       display_name: name,
       last_seen: new Date().toISOString(),
     } as any)
+    if (error) {
+      console.error('Failed to create profile:', error.message)
+    }
     // Then set state (react hooks fire LocationContext effect)
     setUserId(id)
     setDisplayNameState(name)

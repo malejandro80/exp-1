@@ -5,12 +5,11 @@ import { useIdentity } from '@/contexts/IdentityContext'
 import { useLocation } from '@/contexts/LocationContext'
 import { useRoom } from '@/contexts/RoomContext'
 import { haversineDistance } from '@/lib/helpers'
+import { STALE_PROFILE_MINUTES, MS_PER_MINUTE } from '@/constants/rules'
 import type { PersonInRoom, Room } from '@/lib/types'
 
-const STALE_MINUTES = 5
-
 export function useNearby() {
-  const { userId } = useIdentity()
+  const { userId, displayName } = useIdentity()
   const { latitude, longitude, gpsReady } = useLocation()
   const { currentRoom, nearbyRooms, loading: roomLoading, isJoined, joinRoom, leaveRoom } = useRoom()
   const router = useRouter()
@@ -28,7 +27,7 @@ export function useNearby() {
 
     try {
       setError(null)
-      const staleTime = new Date(Date.now() - STALE_MINUTES * 60000).toISOString()
+      const staleTime = new Date(Date.now() - STALE_PROFILE_MINUTES * MS_PER_MINUTE).toISOString()
 
       const [profilesResult, blocksResult] = await Promise.all([
         supabase
@@ -94,6 +93,12 @@ export function useNearby() {
     const user2 = me < them ? them : me
 
     try {
+      await supabase.from('profiles').upsert({
+        id: me,
+        display_name: displayName || 'User',
+        last_seen: new Date().toISOString(),
+      } as any)
+
       const { data: existing } = await supabase
         .from('conversations')
         .select('id')
@@ -148,7 +153,7 @@ export function useNearby() {
     } finally {
       setSending(false)
     }
-  }, [requestTarget, requestMessage, userId, router, sending])
+  }, [requestTarget, requestMessage, userId, displayName, router, sending])
 
   const handleCancelRequest = useCallback(() => {
     setRequestTarget(null)

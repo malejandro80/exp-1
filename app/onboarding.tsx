@@ -4,6 +4,7 @@ import {
 } from 'react-native'
 import { useIdentity } from '@/contexts/IdentityContext'
 import { Colors, Spacing, Radius } from '@/constants/theme'
+import { DISPLAY_NAME_MAX_LENGTH } from '@/constants/rules'
 
 export default function OnboardingScreen() {
   const { setDisplayName } = useIdentity()
@@ -34,7 +35,7 @@ export default function OnboardingScreen() {
             onChangeText={setName}
             placeholder="Your name"
             placeholderTextColor={Colors.light.textMuted}
-            maxLength={30}
+            maxLength={DISPLAY_NAME_MAX_LENGTH}
             autoFocus
             autoCorrect={false}
           />

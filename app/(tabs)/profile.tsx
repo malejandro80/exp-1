@@ -3,6 +3,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
+import { DISPLAY_NAME_MAX_LENGTH } from '@/constants/rules'
 import { styles } from './profile.styles'
 import { useProfile } from './useProfile'
 
@@ -26,7 +27,7 @@ export default function ProfileScreen() {
             onChangeText={setNameInput}
             placeholder="Your name"
             placeholderTextColor={Colors.light.textMuted}
-            maxLength={30}
+            maxLength={DISPLAY_NAME_MAX_LENGTH}
           />
         </View>
 

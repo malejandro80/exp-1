@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { TouchableOpacity, View, Text } from 'react-native'
-import { Colors, Spacing } from '@/constants/theme'
+import { Colors, Spacing, Radius } from '@/constants/theme'
+import { AVATAR_SIZE, AVATAR_TEXT_SIZE } from '@/constants/layout'
 import { timeAgo } from '@/lib/helpers'
 
 interface ChatCardProps {
@@ -41,14 +42,14 @@ export const ChatCard = memo(function ChatCard({
       onPress={onPress}
     >
       <View style={{
-        width: 44,
-        height: 44,
-        borderRadius: 9999,
+        width: AVATAR_SIZE,
+        height: AVATAR_SIZE,
+        borderRadius: Radius.full,
         backgroundColor: isPending ? Colors.light.warning : Colors.light.brand,
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-        <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
+        <Text style={{ color: '#fff', fontSize: AVATAR_TEXT_SIZE, fontWeight: '700' }}>
           {(displayName || '?')[0].toUpperCase()}
         </Text>
       </View>

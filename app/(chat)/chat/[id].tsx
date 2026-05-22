@@ -4,6 +4,7 @@ import {
 import { Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
+import { MESSAGE_MAX_LENGTH } from '@/constants/rules'
 import { MessageBubble } from '@/components/message-bubble'
 import { styles } from './[id].styles'
 import { useChat } from './useChat'
@@ -102,7 +103,7 @@ export default function ChatScreen() {
             placeholder="Type a message..."
             placeholderTextColor={Colors.light.textMuted}
             multiline
-            maxLength={500}
+            maxLength={MESSAGE_MAX_LENGTH}
           />
           <TouchableOpacity
             style={[styles.sendButton, !input.trim() && styles.sendButtonDisabled]}

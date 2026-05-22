@@ -6,11 +6,18 @@ import MapView, { Marker, Callout, Circle } from 'react-native-maps'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
 import { metersToHuman, haversineDistance } from '@/lib/helpers'
+import { MESSAGE_MAX_LENGTH } from '@/constants/rules'
+import {
+  ITEM_HEIGHT,
+  MAP_LATITUDE_DELTA,
+  MAP_LONGITUDE_DELTA,
+  MODAL_BORDER_RADIUS,
+  MODAL_PADDING,
+  MODAL_MAX_WIDTH,
+} from '@/constants/layout'
 import { PersonCard } from '@/components/person-card'
 import { styles } from './nearby.styles'
 import { useNearby } from './useNearby'
-
-const ITEM_HEIGHT = 76
 
 export default function NearbyScreen() {
   const {
@@ -58,8 +65,8 @@ export default function NearbyScreen() {
             initialRegion={{
               latitude,
               longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
+              latitudeDelta: MAP_LATITUDE_DELTA,
+              longitudeDelta: MAP_LONGITUDE_DELTA,
             }}
             showsUserLocation
             showsMyLocationButton
@@ -202,10 +209,10 @@ export default function NearbyScreen() {
         >
           <View style={{
             backgroundColor: Colors.light.background,
-            borderRadius: 16,
-            padding: 24,
+            borderRadius: MODAL_BORDER_RADIUS,
+            padding: MODAL_PADDING,
             width: '85%',
-            maxWidth: 400,
+            maxWidth: MODAL_MAX_WIDTH,
           }}>
             <Text style={{ fontSize: 18, fontWeight: '700', color: Colors.light.text, marginBottom: 4 }}>
               Message {requestTarget?.display_name || 'user'}
@@ -228,7 +235,7 @@ export default function NearbyScreen() {
               placeholder="Write your message..."
               placeholderTextColor={Colors.light.textMuted}
               multiline
-              maxLength={500}
+              maxLength={MESSAGE_MAX_LENGTH}
               autoFocus
             />
             <View style={{ flexDirection: 'row', marginTop: 16, gap: 12 }}>
