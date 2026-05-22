@@ -1,20 +1,29 @@
 import {
   View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl,
+  Modal, TextInput, KeyboardAvoidingView, Platform,
 } from 'react-native'
 import MapView, { Marker, Callout, Circle } from 'react-native-maps'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
 import { metersToHuman, haversineDistance } from '@/lib/helpers'
+import { MESSAGE_MAX_LENGTH } from '@/constants/rules'
+import {
+  ITEM_HEIGHT,
+  MAP_LATITUDE_DELTA,
+  MAP_LONGITUDE_DELTA,
+  MODAL_BORDER_RADIUS,
+  MODAL_PADDING,
+  MODAL_MAX_WIDTH,
+} from '@/constants/layout'
 import { PersonCard } from '@/components/person-card'
 import { styles } from './nearby.styles'
 import { useNearby } from './useNearby'
-
-const ITEM_HEIGHT = 76
 
 export default function NearbyScreen() {
   const {
     latitude,
     longitude,
+    gpsReady,
     currentRoom,
     nearbyRooms,
     roomLoading,
@@ -30,6 +39,12 @@ export default function NearbyScreen() {
     setRefreshing,
     handleTapPerson,
     handleJoinRoom,
+    requestTarget,
+    requestMessage,
+    setRequestMessage,
+    sending,
+    handleSendRequest,
+    handleCancelRequest,
   } = useNearby()
 
   if (loading || roomLoading) {
@@ -44,17 +59,19 @@ export default function NearbyScreen() {
   if (!currentRoom) {
     return (
       <View style={styles.container}>
-        {latitude && longitude && (
+        {gpsReady && latitude && longitude ? (
           <MapView
             style={styles.map}
             initialRegion={{
               latitude,
               longitude,
-              latitudeDelta: 0.02,
-              longitudeDelta: 0.02,
+              latitudeDelta: MAP_LATITUDE_DELTA,
+              longitudeDelta: MAP_LONGITUDE_DELTA,
             }}
             showsUserLocation
             showsMyLocationButton
+            followsUserLocation
+            rotateEnabled={false}
           >
             {nearbyRooms.map(room => {
               const dist = haversineDistance(latitude, longitude, room.latitude, room.longitude)
@@ -84,6 +101,11 @@ export default function NearbyScreen() {
               )
             })}
           </MapView>
+        ) : (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={Colors.light.brand} />
+            <Text style={styles.loadingText}>Getting your location...</Text>
+          </View>
         )}
 
         {selectedRoom && (
@@ -179,6 +201,61 @@ export default function NearbyScreen() {
           <PersonCard person={item} onPress={handleTapPerson} />
         )}
       />
+
+      <Modal visible={!!requestTarget} transparent animationType="fade" onRequestClose={handleCancelRequest}>
+        <KeyboardAvoidingView
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <View style={{
+            backgroundColor: Colors.light.background,
+            borderRadius: MODAL_BORDER_RADIUS,
+            padding: MODAL_PADDING,
+            width: '85%',
+            maxWidth: MODAL_MAX_WIDTH,
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: Colors.light.text, marginBottom: 4 }}>
+              Message {requestTarget?.display_name || 'user'}
+            </Text>
+            <Text style={{ fontSize: 13, color: Colors.light.textTertiary, marginBottom: 16 }}>
+              They&apos;ll need to accept before you can chat freely.
+            </Text>
+            <TextInput
+              style={{
+                backgroundColor: Colors.light.controlBackground,
+                borderRadius: 12,
+                padding: 16,
+                fontSize: 16,
+                color: Colors.light.text,
+                minHeight: 80,
+                textAlignVertical: 'top',
+              }}
+              value={requestMessage}
+              onChangeText={setRequestMessage}
+              placeholder="Write your message..."
+              placeholderTextColor={Colors.light.textMuted}
+              multiline
+              maxLength={MESSAGE_MAX_LENGTH}
+              autoFocus
+            />
+            <View style={{ flexDirection: 'row', marginTop: 16, gap: 12 }}>
+              <TouchableOpacity
+                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: Colors.light.controlBackground }}
+                onPress={handleCancelRequest}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: Colors.light.textSecondary }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: Colors.light.brand, opacity: (!requestMessage.trim() || sending) ? 0.4 : 1 }}
+                onPress={handleSendRequest}
+                disabled={!requestMessage.trim() || sending}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>{sending ? 'Sending...' : 'Send'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   )
 }

@@ -22,6 +22,7 @@ export interface Conversation {
   id: string
   participant1_id: string
   participant2_id: string
+  status: 'pending' | 'active' | 'declined'
   last_message_at: string
   created_at: string
 }

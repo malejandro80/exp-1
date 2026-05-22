@@ -7,10 +7,8 @@ import { ChatCard } from '@/components/chat-card'
 import { styles } from './chats.styles'
 import { useChats } from './useChats'
 
-const ITEM_HEIGHT = 76
-
 export default function ChatsScreen() {
-  const { conversations, loading, error, navigateToChat } = useChats()
+  const { conversations, loading, error, navigateToChat, userId, handleAccept, handleDecline } = useChats()
 
   if (loading) {
     return (
@@ -37,11 +35,6 @@ export default function ChatsScreen() {
         data={conversations}
         keyExtractor={item => item.id}
         contentContainerStyle={conversations.length === 0 ? styles.emptyContainer : styles.list}
-        getItemLayout={(_data, index) => ({
-          length: ITEM_HEIGHT,
-          offset: ITEM_HEIGHT * index,
-          index,
-        })}
         initialNumToRender={12}
         windowSize={5}
         maxToRenderPerBatch={10}
@@ -59,7 +52,11 @@ export default function ChatsScreen() {
             displayName={item.otherUser?.display_name || null}
             lastMessage={item.lastMessage}
             lastMessageAt={item.last_message_at}
+            status={item.status}
+            isPendingRecipient={item.status === 'pending' && item.participant2_id === userId}
             onPress={() => navigateToChat(item)}
+            onAccept={() => handleAccept(item.id)}
+            onDecline={() => handleDecline(item.id)}
           />
         )}
       />

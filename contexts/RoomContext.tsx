@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { haversineDistance } from '@/lib/helpers'
 import { useIdentity } from './IdentityContext'
 import { useLocation } from './LocationContext'
+import { SEARCH_RADIUS_METERS } from '@/constants/rules'
 import type { Room } from '@/lib/types'
 
 interface RoomState {
@@ -23,7 +24,7 @@ const RoomContext = createContext<RoomState>({
   leaveRoom: () => {},
 })
 
-const SEARCH_RADIUS = 5000
+const SEARCH_RADIUS = SEARCH_RADIUS_METERS
 
 export function RoomProvider({ children }: { children: ReactNode }) {
   const { userId, isOnboarded } = useIdentity()

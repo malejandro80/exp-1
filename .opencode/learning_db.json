@@ -63,6 +63,14 @@
       "issue": "Pipeline de 5 agentes reemplazada por flujo de Superpowers",
       "fix": "Migrar a Superpowers: instalar plugin, eliminar agentes viejos, reescribir AGENTS.md",
       "rule": "El flujo de desarrollo ahora usa skills de Superpowers (skill brainstorming, skill writing-plans, etc.). No invocar @product-agent, @architect-agent, etc. Usar skill <nombre> para cargar el skill correspondiente"
+    },
+    {
+      "id": "L-009",
+      "date": "2026-05-21",
+      "agent": "all",
+      "issue": "Skills locales (git-flow, supabase) obsoletos al migrar a MCP servers directos",
+      "fix": "Eliminar skills git-flow y supabase de .opencode/skills/. Supabase y GitHub ahora se acceden via MCP",
+      "rule": "Preferir MCP servers sobre skills locales cuando exista un MCP server oficial. Skills locales se usan para metodología/flujo, MCP para acceso directo a APIs externas"
     }
   ]
 }

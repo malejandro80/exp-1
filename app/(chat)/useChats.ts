@@ -7,6 +7,7 @@ interface ConversationRow {
   id: string
   participant1_id: string
   participant2_id: string
+  status: 'pending' | 'active'
   last_message_at: string
   created_at: string
 }
@@ -32,6 +33,7 @@ export function useChats() {
         .from('conversations')
         .select('*')
         .or(`participant1_id.eq.${userId},participant2_id.eq.${userId}`)
+        .in('status', ['pending', 'active'])
         .order('last_message_at', { ascending: false })
 
       if (convsError) throw convsError
@@ -58,6 +60,7 @@ export function useChats() {
 
           return {
             ...conv,
+            status: conv.status as 'pending' | 'active',
             otherUser: (profileResult.data as any) || null,
             lastMessage: ((messageResult.data as any[])?.[0]?.content as string) || null,
           }
@@ -86,11 +89,48 @@ export function useChats() {
     router.push(`/chat/${item.id}?otherUserId=${otherUserId}` as any)
   }, [userId, router])
 
+  const handleAccept = useCallback(async (conversationId: string) => {
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({ status: 'active' })
+      .eq('id', conversationId)
+
+    if (updateError) {
+      console.error('Failed to accept conversation:', updateError)
+      return
+    }
+
+    let accepted: ConversationWithUser | undefined
+    setConversations(prev => {
+      accepted = prev.find(c => c.id === conversationId)
+      return prev.map(c =>
+        c.id === conversationId ? { ...c, status: 'active' as const } : c
+      )
+    })
+    if (accepted) navigateToChat(accepted)
+  }, [navigateToChat])
+
+  const handleDecline = useCallback(async (conversationId: string) => {
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({ status: 'declined' })
+      .eq('id', conversationId)
+
+    if (updateError) {
+      console.error('Failed to decline conversation:', updateError)
+      return
+    }
+
+    fetchConversations()
+  }, [fetchConversations])
+
   return {
     conversations,
     loading,
     error,
     navigateToChat,
     userId,
+    handleAccept,
+    handleDecline,
   }
 }

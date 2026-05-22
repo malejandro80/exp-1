@@ -29,6 +29,7 @@ create table if not exists conversations (
   id uuid default gen_random_uuid() primary key,
   participant1_id uuid references profiles(id) on delete cascade not null,
   participant2_id uuid references profiles(id) on delete cascade not null,
+  status text not null default 'pending' check (status in ('pending', 'active', 'declined')),
   last_message_at timestamptz default now(),
   created_at timestamptz default now(),
   unique (participant1_id, participant2_id)
@@ -83,7 +84,7 @@ create policy "Public update" on profiles for update using (true);
 create policy "Public read" on rooms for select using (true);
 create policy "Public insert" on rooms for insert with check (true);
 
-create policy "Public read" on conversations for select using (true);
+create policy "Public read active/pending" on conversations for select using (status in ('pending', 'active'));
 create policy "Public insert" on conversations for insert with check (true);
 create policy "Public update" on conversations for update using (true);
 
