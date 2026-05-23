@@ -1,5 +1,5 @@
 -- Run this in your Supabase SQL editor to set up the database schema
--- Disposable profiles: no auth.users dependency, users identified by client-generated UUID
+-- Auth-based profiles: users authenticate via Google OAuth, profiles FK to auth.users
 
 -- Profiles table
 create table if not exists profiles (
@@ -68,7 +68,7 @@ insert into rooms (name, description, latitude, longitude, radius_meters)
 values ('Test Spot', 'A test room near you', 40.7128, -74.006, 100)
 on conflict do nothing;
 
--- Allow public access for the MVP (no auth required)
+-- Profiles linked to auth.users (Google OAuth)
 alter table profiles enable row level security;
 alter table rooms enable row level security;
 alter table conversations enable row level security;
@@ -76,23 +76,61 @@ alter table messages enable row level security;
 alter table blocks enable row level security;
 alter table reports enable row level security;
 
--- Everyone can read/write everything (disposable profile MVP)
-create policy "Public read" on profiles for select using (true);
-create policy "Public insert" on profiles for insert with check (true);
-create policy "Public update" on profiles for update using (true);
+-- Auth-gated policies (users must be authenticated)
+create policy "Profiles are publicly readable"
+  on profiles for select using (true);
 
-create policy "Public read" on rooms for select using (true);
-create policy "Public insert" on rooms for insert with check (true);
+create policy "Users can create their own profile"
+  on profiles for insert with check (auth.uid() = id);
 
-create policy "Public read active/pending" on conversations for select using (status in ('pending', 'active'));
-create policy "Public insert" on conversations for insert with check (true);
-create policy "Public update" on conversations for update using (true);
+create policy "Users can update their own profile"
+  on profiles for update using (auth.uid() = id);
 
-create policy "Public read" on messages for select using (true);
-create policy "Public insert" on messages for insert with check (true);
+create policy "Rooms are publicly readable"
+  on rooms for select using (true);
 
-create policy "Public read" on blocks for select using (true);
-create policy "Public insert" on blocks for insert with check (true);
+create policy "Authenticated users can create rooms"
+  on rooms for insert with check (auth.role() = 'authenticated');
 
-create policy "Public read" on reports for select using (true);
-create policy "Public insert" on reports for insert with check (true);
+create policy "Participants can view conversations"
+  on conversations for select using (
+    auth.uid() = participant1_id or auth.uid() = participant2_id
+  );
+
+create policy "Users can create conversations"
+  on conversations for insert with check (auth.uid() = participant1_id);
+
+create policy "Participants can update conversations"
+  on conversations for update using (
+    auth.uid() = participant1_id or auth.uid() = participant2_id
+  );
+
+create policy "Participants can view messages"
+  on messages for select using (
+    exists (
+      select 1 from conversations c
+      where c.id = messages.conversation_id
+      and (c.participant1_id = auth.uid() or c.participant2_id = auth.uid())
+    )
+  );
+
+create policy "Participants can send messages"
+  on messages for insert with check (
+    exists (
+      select 1 from conversations c
+      where c.id = messages.conversation_id
+      and (c.participant1_id = auth.uid() or c.participant2_id = auth.uid())
+    )
+  );
+
+create policy "Users can view their own blocks"
+  on blocks for select using (auth.uid() = blocker_id);
+
+create policy "Users can block others"
+  on blocks for insert with check (auth.uid() = blocker_id);
+
+create policy "Users can view their own reports"
+  on reports for select using (auth.uid() = reporter_id);
+
+create policy "Users can report others"
+  on reports for insert with check (auth.uid() = reporter_id);
