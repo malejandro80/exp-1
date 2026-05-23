@@ -2,7 +2,7 @@ import React from 'react'
 import { render } from '@testing-library/react-native'
 import ChatsTab from '@/app/(tabs)/chat'
 
-jest.mock('@/app/(chat)/useChats', () => ({
+jest.mock('@/app/(chat)/chats/useChats', () => ({
   useChats: () => ({
     conversations: [],
     loading: false,

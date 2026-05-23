@@ -143,6 +143,86 @@
       "issue": "Varios useEffect tenían lógica inline (funciones async, setTimeout, condicionales) declarada dentro del callback del efecto",
       "fix": "Extraer toda la lógica inline a funciones nombradas declaradas al inicio del hook (después de los estados/refs, antes de los useEffects), usando closure en lugar de parámetros. Las dependencias reales (userId, etc.) van en el array de deps del useEffect, no la función contenedora. Suprimir eslint-disable-next-line react-hooks/exhaustive-deps cuando sea necesario.",
       "rule": "En hooks/contextos, toda la lógica dentro de useEffect debe extraerse a funciones nombradas declaradas al inicio del hook (después de estados/refs, antes de los useEffects), usando closure para acceder a los setters/valores. No usar IIFEs ni lógica inline en el callback del useEffect. Las funciones extraídas NO van en el array de dependencias; las dependencias reales (userId, conversationId, etc.) son las que controlan la re-ejecución del efecto. Suprimir la advertencia de exhaustive-deps con eslint-disable-next-line."
+    },
+    {
+      "id": "L-019",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "El finishing skill ofrecía 4 opciones, y siempre elegir 'Create PR' es más rápido que preguntar al usuario",
+      "fix": "Agregar regla L-019: después de verification-before-completion exitoso, abrir automáticamente un PR sin preguntar, a menos que el usuario indique otra cosa",
+      "rule": "Después de completar todas las tareas de implementación y pasar verification-before-completion (lint + tsc + tests), abrir automáticamente un Pull Request a main usando GitHub MCP. No presentar las opciones del finishing-a-development-branch skill a menos que el usuario haya indicado explícitamente que quiere merge local, mantener o descartar."
+    },
+    {
+      "id": "L-020",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Strings hardcodeados en componentes (login, onboarding, useProfile) sin archivo centralizado de labels",
+      "fix": "Crear constants/labels.ts con todas las strings de UI y referenciarlas desde los componentes",
+      "rule": "Todos los strings de UI visibles al usuario deben centralizarse en constants/labels.ts. Ningún componente debe contener strings hardcodeados. Importar las constantes con import { STRING_NAME } from '@/constants/labels'."
+    },
+    {
+      "id": "L-021",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "app/index.tsx retornaba null durante loading, sin feedback visual para el usuario",
+      "fix": "Reemplazar return null por un loading state con ActivityIndicator y texto explicativo",
+      "rule": "Nunca retornar null o undefined durante estados de carga en la UI. Siempre mostrar un indicador visual (ActivityIndicator, spinner, skeleton) con un texto que explique qué está sucediendo (e.g. 'Loading your profile…')."
+    },
+    {
+      "id": "L-022",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "La lógica de estado y handlers de LoginScreen y OnboardingScreen estaba dentro del componente en vez de un hook separado",
+      "fix": "Extraer estados, useEffects, y handlers a hooks dedicados (useLogin.ts, useOnboarding.ts) dejando el componente únicamente con JSX y referencias al hook",
+      "rule": "La lógica de estado, efectos secundarios y handlers de un screen/componente debe extraerse a un custom hook dedicado en hooks/<useScreen>.ts. El componente solo debe contener JSX y llamadas al hook. No mezclar lógica de estado con markup en el mismo bloque."
+    },
+    {
+      "id": "L-023",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Google Client IDs hardcodeados en services/auth.ts en vez de usar variables de entorno",
+      "fix": "Mover WEB_CLIENT_ID e IOS_CLIENT_ID a .env con prefijo EXPO_PUBLIC_ y leerlos con process.env.EXPO_PUBLIC_*",
+      "rule": "Toda API key, client ID, secret, o identificador de servicio externo debe ir en .env con prefijo EXPO_PUBLIC_ (para Expo) y leerse con process.env. Nunca hardcodear estos valores en el código fuente."
+    },
+    {
+      "id": "L-024",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "services/auth.ts contenía un comentario innecesario que explicaba código obvio ('// Configure once at module load')",
+      "fix": "Eliminar el comentario — el código es auto-explicativo",
+      "rule": "No dejar comentarios que expliquen código obvio o auto-explicativo. Los comentarios deben reservarse para explicar por qué se hace algo inusual, no qué hace el código. El código debe ser auto-documentado."
+    },
+    {
+      "id": "L-025",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "services/index.ts tenía un bloque JSDoc grande con ejemplos de uso que nunca se actualizaba y quedó como código comentado",
+      "fix": "Eliminar el bloque JSDoc con ejemplos de uso comentados",
+      "rule": "Nunca dejar código comentado en el código base. Si es información útil para developers, ponerla en AGENTS.md, README, o documentación externa. El código comentado se vuelve obsoleto y engañoso. Excepción: solo si el desarrollador indica explícitamente 'DONT DELETE'."
+    },
+    {
+      "id": "L-026",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "El feature Google Login se implementó sin tests unitarios — los tests se crearon después como fix de PR review",
+      "fix": "Crear tests para labels, hooks (useLogin, useOnboarding), screens (LoginScreen, OnboardingScreen), y redirect logic (Index) como parte del feature",
+      "rule": "Dentro del flujo de trabajo para crear un feature, crear también los tests unitarios de cada nuevo componente/hook/servicio ANTES del verification-before-completion. Cada nuevo archivo en app/, hooks/, services/, o contexts/ debe tener su archivo de test correspondiente en __tests__/. Los tests deben cubrir: estados de carga, estados de error, estados vacíos, y el flujo feliz. Usar @testing-library/react-native para componentes y mocks de hooks con jest.fn(). Los archivos de constantes simples (constants/*.ts) no necesitan tests — son valores planos."
+    },
+    {
+      "id": "L-027",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": ".env con Google Client IDs y SUPABASE keys no estaba en .gitignore, exponiendo secrets en el repo",
+      "fix": "Agregar '.env' al .gitignore (solo estaba .env*.local)",
+      "rule": "Siempre verificar que .env esté en .gitignore antes de hacer commit. .env*.local no es suficiente — el archivo .env raíz también debe estar ignorado. Usar .env.example para documentar las variables necesarias."
+    },
+    {
+      "id": "L-028",
+      "date": "2026-05-22",
+      "agent": "jarvis",
+      "issue": "Componentes, estilos y hooks estaban dispersos en app/ y hooks/ sin agrupación por componente",
+      "fix": "Agrupar cada componente en una carpeta con su nombre: app/<componente>/index.tsx + <componente>.styles.ts + use<Componente>.ts",
+      "rule": "Cada componente de pantalla debe tener su propia carpeta en app/ con el nombre del componente. Dentro: index.tsx (componente), <nombre>.styles.ts (estilos), y hooks relacionados (use<nombre>.ts). No dejar archivos sueltos en app/ — siempre dentro de su carpeta. Las rutas de Expo Router se mantienen porque index.tsx dentro de la carpeta corresponde a la ruta de la carpeta."
     }
   ]
 }

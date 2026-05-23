@@ -13,7 +13,8 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Nearby needs your location to show people around you.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Nearby needs your location to show people around you."
-      }
+      },
+      "bundleIdentifier": "com.anonymous.nearby"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,13 +27,20 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDmlZ9bINzrxb17DX27_je3DTYlHYJkWtc"
         }
-      }
+      },
+      "package": "com.anonymous.nearby"
     },
     "web": {
       "output": "static",
@@ -58,7 +66,8 @@
           "locationWhenInUsePermission": "Nearby needs your location to find people around you."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": false,

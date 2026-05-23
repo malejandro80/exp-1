@@ -4,6 +4,16 @@ import { useEffect, useState } from 'react'
 import { Alert } from 'react-native'
 import { api } from '@/services'
 import { useIdentity } from '@/contexts/IdentityContext'
+import {
+  PROFILE_LOAD_ERROR,
+  PROFILE_SAVE_ERROR,
+  PROFILE_SAVED_TITLE,
+  PROFILE_SAVED_MESSAGE,
+  SIGNOUT_TITLE,
+  SIGNOUT_MESSAGE,
+  SIGNOUT_CANCEL,
+  SIGNOUT_CONFIRM,
+} from '@/constants/labels'
 
 interface ProfileRow {
   id: string
@@ -16,7 +26,7 @@ interface ProfileRow {
 }
 
 export const useProfile = () => {
-  const { userId, displayName, setDisplayName, resetIdentity } = useIdentity()
+  const { userId, displayName, setDisplayName, signOut } = useIdentity()
   const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [nameInput, setNameInput] = useState(displayName)
   const [saving, setSaving] = useState(false)
@@ -26,7 +36,7 @@ export const useProfile = () => {
     if (!userId) return
     const profile = await api.profiles.get(userId)
     if (!profile) {
-      setError('Could not load profile.')
+      setError(PROFILE_LOAD_ERROR)
       return
     }
     setProfile(profile)
@@ -45,25 +55,25 @@ export const useProfile = () => {
     const ok = await api.profiles.upsert({
       id: userId,
       display_name: nameInput.trim(),
-      last_seen: new Date().toISOString()
+      last_seen: new Date().toISOString(),
     })
     setSaving(false)
     if (!ok) {
-      setError('Failed to save profile.')
+      setError(PROFILE_SAVE_ERROR)
       return
     }
     await setDisplayName(nameInput.trim())
-    Alert.alert('Saved', 'Profile updated')
+    Alert.alert(PROFILE_SAVED_TITLE, PROFILE_SAVED_MESSAGE)
   }
 
   const handleReset = () => {
     Alert.alert(
-      'Reset Profile',
-      'This will delete your profile and create a new anonymous identity. Your chats will be lost.',
+      SIGNOUT_TITLE,
+      SIGNOUT_MESSAGE,
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Reset', style: 'destructive', onPress: resetIdentity }
-      ]
+        { text: SIGNOUT_CANCEL, style: 'cancel' },
+        { text: SIGNOUT_CONFIRM, style: 'destructive', onPress: signOut },
+      ],
     )
   }
 
@@ -74,6 +84,6 @@ export const useProfile = () => {
     error,
     setNameInput,
     upsertProfile,
-    handleReset
+    handleReset,
   }
 }

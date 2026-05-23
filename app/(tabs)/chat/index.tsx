@@ -1,4 +1,4 @@
-import ChatsScreen from '../(chat)/chats'
+import ChatsScreen from '@/app/(chat)/chats'
 
 const ChatsTab = () => <ChatsScreen />
 

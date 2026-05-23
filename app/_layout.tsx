@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar'
 import * as Font from 'expo-font'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
+import { AuthProvider } from '@/contexts/AuthContext'
 import { IdentityProvider } from '@/contexts/IdentityContext'
 import { styles } from './_layout.styles'
 import { LocationProvider } from '@/contexts/LocationContext'
@@ -17,6 +18,7 @@ const RootScreens = () => {
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(chat)" />
+      <Stack.Screen name="login" />
     </Stack>
   )
 }
@@ -43,14 +45,16 @@ const RootLayout = () => {
   }
 
   return (
-    <IdentityProvider>
-      <LocationProvider>
-        <RoomProvider>
-          <RootScreens />
-          <StatusBar style="auto" />
-        </RoomProvider>
-      </LocationProvider>
-    </IdentityProvider>
+    <AuthProvider>
+      <IdentityProvider>
+        <LocationProvider>
+          <RoomProvider>
+            <RootScreens />
+            <StatusBar style="auto" />
+          </RoomProvider>
+        </LocationProvider>
+      </IdentityProvider>
+    </AuthProvider>
   )
 }
 

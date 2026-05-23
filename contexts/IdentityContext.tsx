@@ -1,88 +1,91 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { api } from '@/services'
-import { USER_ID_KEY, DISPLAY_NAME_KEY } from '@/constants/storage'
-
-const generateId = (): string => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
-  })
-}
+import { useAuth } from './AuthContext'
+import { onboardingStorage } from '@/lib/onboarding'
+import type { Profile } from '@/lib/types'
 
 interface IdentityState {
   userId: string | null
   displayName: string
+  avatarUrl: string | null
   isOnboarded: boolean
+  loading: boolean
   setDisplayName: (name: string) => Promise<void>
-  resetIdentity: () => Promise<void>
+  signOut: () => Promise<void>
 }
 
 const IdentityContext = createContext<IdentityState>({
   userId: null,
   displayName: '',
+  avatarUrl: null,
   isOnboarded: false,
+  loading: true,
   setDisplayName: async () => {},
-  resetIdentity: async () => {},
+  signOut: async () => {},
 })
 
 export const IdentityProvider = ({ children }: { children: ReactNode }) => {
-  const [userId, setUserId] = useState<string | null>(null)
-  const [displayName, setDisplayNameState] = useState('')
-  const [isOnboarded, setIsOnboarded] = useState(false)
+  const { user, signOut: authSignOut } = useAuth()
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [onboardedLocally, setOnboardedLocally] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  const loadStoredIdentity = async () => {
-    try {
-      const storedId = await AsyncStorage.getItem(USER_ID_KEY)
-      const storedName = await AsyncStorage.getItem(DISPLAY_NAME_KEY)
+  const userId = user?.id ?? null
 
-      if (storedId && storedName) {
-        setUserId(storedId)
-        setDisplayNameState(storedName)
-        setIsOnboarded(true)
+  // Check local flag for fast-path (works offline)
+  useEffect(() => {
+    if (!userId) {
+      setOnboardedLocally(false)
+      return
+    }
+    onboardingStorage.isComplete(userId).then(setOnboardedLocally)
+  }, [userId])
+
+  // Fetch profile from DB
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!userId) {
+        setLoading(false)
+        return
       }
-    } catch {
-      // Fresh start
-    } finally {
+      const existing = await api.profiles.get(userId)
+      if (existing) {
+        await onboardingStorage.markComplete(userId)
+        setOnboardedLocally(true)
+      }
+      setProfile(existing)
       setLoading(false)
     }
-  }
-
-  useEffect(() => {
-    loadStoredIdentity()
-  }, [])
+    fetchProfile()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId])
 
   const setDisplayName = async (name: string) => {
-    const id = generateId()
-    // Create profile in Supabase BEFORE triggering LocationContext
+    if (!userId) return
     const ok = await api.profiles.upsert({
-      id,
+      id: userId,
       display_name: name,
       last_seen: new Date().toISOString(),
     })
-    if (!ok) {
-      console.error('Failed to create profile')
+    if (ok) {
+      setProfile((prev) => prev ? { ...prev, display_name: name } : null)
     }
-    // Then set state (react hooks fire LocationContext effect)
-    setUserId(id)
-    setDisplayNameState(name)
-    setIsOnboarded(true)
-    await AsyncStorage.setItem(USER_ID_KEY, id)
-    await AsyncStorage.setItem(DISPLAY_NAME_KEY, name)
   }
 
-  const resetIdentity = async () => {
-    setUserId(null)
-    setDisplayNameState('')
-    setIsOnboarded(false)
-    await AsyncStorage.multiRemove([USER_ID_KEY, DISPLAY_NAME_KEY])
+  const signOut = async () => {
+    if (userId) {
+      await onboardingStorage.clear(userId)
+      setOnboardedLocally(false)
+    }
+    await authSignOut()
   }
 
-  if (loading) return null
+  const avatarUrl = profile?.avatar_url ?? user?.user_metadata?.avatar_url ?? null
+  const displayName = profile?.display_name ?? user?.user_metadata?.full_name ?? ''
+  const isOnboarded = !!profile || onboardedLocally
 
   return (
-    <IdentityContext.Provider value={{ userId, displayName, isOnboarded, setDisplayName, resetIdentity }}>
+    <IdentityContext.Provider value={{ userId, displayName, avatarUrl, isOnboarded, loading, setDisplayName, signOut }}>
       {children}
     </IdentityContext.Provider>
   )
