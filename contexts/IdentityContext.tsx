@@ -8,6 +8,7 @@ interface IdentityState {
   userId: string | null
   displayName: string
   avatarUrl: string | null
+  role: 'user' | 'admin'
   isOnboarded: boolean
   loading: boolean
   setDisplayName: (name: string) => Promise<void>
@@ -18,6 +19,7 @@ const IdentityContext = createContext<IdentityState>({
   userId: null,
   displayName: '',
   avatarUrl: null,
+  role: 'user',
   isOnboarded: false,
   loading: true,
   setDisplayName: async () => {},
@@ -82,10 +84,11 @@ export const IdentityProvider = ({ children }: { children: ReactNode }) => {
 
   const avatarUrl = profile?.avatar_url ?? user?.user_metadata?.avatar_url ?? null
   const displayName = profile?.display_name ?? user?.user_metadata?.full_name ?? ''
+  const role = (profile?.role as 'user' | 'admin') || 'user'
   const isOnboarded = !!profile || onboardedLocally
 
   return (
-    <IdentityContext.Provider value={{ userId, displayName, avatarUrl, isOnboarded, loading, setDisplayName, signOut }}>
+    <IdentityContext.Provider value={{ userId, displayName, avatarUrl, role, isOnboarded, loading, setDisplayName, signOut }}>
       {children}
     </IdentityContext.Provider>
   )
