@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { View, ActivityIndicator, Platform } from 'react-native'
+import { View, ActivityIndicator } from 'react-native'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import * as Font from 'expo-font'
@@ -7,8 +7,7 @@ import * as Notifications from 'expo-notifications'
 import * as Device from 'expo-device'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
-import { AuthProvider } from '@/contexts/AuthContext'
-import { useAuth } from '@/contexts/AuthContext'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { IdentityProvider } from '@/contexts/IdentityContext'
 import { styles } from './_layout.styles'
 import { LocationProvider } from '@/contexts/LocationContext'
@@ -20,6 +19,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 })
 
