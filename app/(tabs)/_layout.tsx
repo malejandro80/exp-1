@@ -3,6 +3,7 @@
 import { Platform } from 'react-native'
 import { Colors } from '@/constants/theme'
 import { Ionicons } from '@expo/vector-icons'
+import { useIdentity } from '@/contexts/IdentityContext'
 import { Tabs } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { tabBarStyle } from './_layout.styles'
@@ -17,6 +18,7 @@ import {
 
 const TabLayout = () => {
   const insets = useSafeAreaInsets()
+  const { role } = useIdentity()
 
   const isAndroid = Platform.OS === 'android'
   const tabPaddingBottom = isAndroid
@@ -65,6 +67,18 @@ const TabLayout = () => {
           )
         }}
       />
+      {role === 'admin' && (
+        <Tabs.Screen
+          name='admin'
+          options={{
+            title: 'Admin',
+            tabBarLabel: 'Admin',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name='storefront-outline' color={color} size={size} />
+            ),
+          }}
+        />
+      )}
       <Tabs.Screen
         name='profile'
         options={{
