@@ -6,6 +6,7 @@ export interface Profile {
   longitude: number | null
   last_seen: string
   created_at: string
+  role: 'user' | 'admin'
 }
 
 export interface Room {
@@ -15,6 +16,8 @@ export interface Room {
   latitude: number
   longitude: number
   radius_meters: number
+  admin_id: string | null
+  is_active: boolean | null
   created_at: string
 }
 
@@ -52,4 +55,23 @@ export interface Report {
 
 export interface PersonInRoom extends Profile {
   distance_meters: number
+}
+
+export interface Promotion {
+  id: string
+  room_id: string
+  title: string
+  description: string | null
+  image_url: string | null
+  duration_minutes: number
+  starts_at: string
+  ends_at: string
+  created_at: string
+}
+
+export interface PushToken {
+  id: string
+  user_id: string
+  token: string
+  created_at: string
 }
