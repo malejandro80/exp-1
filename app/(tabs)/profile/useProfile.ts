@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { Alert } from 'react-native'
+import { useRouter } from 'expo-router'
 import { api } from '@/services'
 import { useIdentity } from '@/contexts/IdentityContext'
+import type { Room } from '@/lib/types'
 import {
   PROFILE_LOAD_ERROR,
   PROFILE_SAVE_ERROR,
@@ -26,11 +28,13 @@ interface ProfileRow {
 }
 
 export const useProfile = () => {
-  const { userId, displayName, setDisplayName, signOut } = useIdentity()
+  const { userId, displayName, role, setDisplayName, signOut } = useIdentity()
   const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [nameInput, setNameInput] = useState(displayName)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+  const [adminRoom, setAdminRoom] = useState<Room | null>(null)
 
   const fetchProfile = async () => {
     if (!userId) return
@@ -47,6 +51,12 @@ export const useProfile = () => {
     fetchProfile()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, displayName])
+
+  useEffect(() => {
+    if (role === 'admin' && userId) {
+      api.rooms.getByAdmin(userId).then(setAdminRoom)
+    }
+  }, [role, userId])
 
   const upsertProfile = async () => {
     if (!userId || !nameInput.trim()) return
@@ -82,6 +92,9 @@ export const useProfile = () => {
     nameInput,
     saving,
     error,
+    role,
+    adminRoom,
+    router,
     setNameInput,
     upsertProfile,
     handleReset,

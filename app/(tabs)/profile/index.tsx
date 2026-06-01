@@ -8,7 +8,7 @@ import { styles } from './profile.styles'
 import { useProfile } from './useProfile'
 
 const ProfileScreen = () => {
-  const { profile, nameInput, saving, error, setNameInput, upsertProfile, handleReset } = useProfile()
+  const { profile, nameInput, saving, error, role, adminRoom, router, setNameInput, upsertProfile, handleReset } = useProfile()
 
   return (
     <SafeAreaView style={styles.container}>
@@ -56,6 +56,29 @@ const ProfileScreen = () => {
         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
           <Text style={styles.resetText}>Reset Profile</Text>
         </TouchableOpacity>
+
+        {role === 'admin' && (
+          <>
+            <View style={styles.divider} />
+            {adminRoom ? (
+              <TouchableOpacity
+                style={styles.adminButton}
+                onPress={() => router.push('/(tabs)/admin/manage-room')}
+              >
+                <Ionicons name="storefront-outline" size={20} color={Colors.light.brand} />
+                <Text style={styles.adminButtonText}>Manage your room</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.adminButton}
+                onPress={() => router.push('/(tabs)/admin/create-room')}
+              >
+                <Ionicons name="add-circle-outline" size={20} color={Colors.light.brand} />
+                <Text style={styles.adminButtonText}>Create your room</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
       </View>
     </SafeAreaView>
   )
