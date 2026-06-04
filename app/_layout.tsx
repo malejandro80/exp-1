@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { View, ActivityIndicator } from 'react-native'
-import { Stack } from 'expo-router'
+import { Stack, router } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import * as Font from 'expo-font'
 import * as Notifications from 'expo-notifications'
@@ -48,6 +48,33 @@ const PushTokenRegister = () => {
   return null
 }
 
+const NotificationResponder = () => {
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data
+      handleNotificationData(data)
+    })
+
+    Notifications.getInitialNotificationAsync().then((notification) => {
+      if (notification) {
+        handleNotificationData(notification.request.content.data)
+      }
+    })
+
+    return () => {
+      subscription.remove()
+    }
+  }, [])
+
+  return null
+}
+
+export const handleNotificationData = (data: Record<string, unknown>) => {
+  if (data.type === 'promotion' && typeof data.promotion_id === 'string') {
+    router.push(`/promotion/${data.promotion_id}`)
+  }
+}
+
 const RootScreens = () => {
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -87,6 +114,7 @@ const RootLayout = () => {
       <IdentityProvider>
         <LocationProvider>
           <RoomProvider>
+            <NotificationResponder />
             <PushTokenRegister />
             <RootScreens />
             <StatusBar style="auto" />
