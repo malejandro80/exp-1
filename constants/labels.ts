@@ -25,3 +25,8 @@ export const SIGNOUT_TITLE = 'Sign Out'
 export const SIGNOUT_MESSAGE = 'This will sign you out of your account.'
 export const SIGNOUT_CANCEL = 'Cancel'
 export const SIGNOUT_CONFIRM = 'Sign Out'
+
+// ─── Push Notifications ──────────────────────────────────────
+export const NOTIFICATIONS = {
+  PROMOTION_BODY_FALLBACK: (roomName: string) => `New promotion at ${roomName}!`,
+} as const
