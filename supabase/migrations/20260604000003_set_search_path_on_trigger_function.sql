@@ -1,16 +1,5 @@
--- Fix pg_net schema: reinstall without 'with schema extensions' so net.http_post() resolves correctly
+-- Add set search_path = '' to the security definer trigger function
 
--- Drop trigger first
-drop trigger if exists on_promotion_inserted on public.promotions;
-
--- Drop the trigger function (cascade handles dependencies)
-drop function if exists public.notify_promotion_inserted();
-
--- Drop and reinstall pg_net in its default 'net' schema
-drop extension if exists pg_net;
-create extension if not exists pg_net;
-
--- Recreate the trigger function
 create or replace function public.notify_promotion_inserted()
 returns trigger
 language plpgsql
@@ -55,9 +44,3 @@ begin
   return new;
 end;
 $$;
-
--- Reattach trigger to promotions table
-create trigger on_promotion_inserted
-  after insert on public.promotions
-  for each row
-  execute function public.notify_promotion_inserted();
