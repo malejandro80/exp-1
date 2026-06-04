@@ -6,6 +6,7 @@ create or replace function public.notify_promotion_inserted()
 returns trigger
 language plpgsql
 security definer
+set search_path = ''
 as $$
 declare
   edge_url text;
