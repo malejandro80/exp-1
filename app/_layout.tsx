@@ -55,11 +55,15 @@ const NotificationResponder = () => {
       handleNotificationData(data)
     })
 
-    Notifications.getInitialNotificationAsync().then((notification) => {
-      if (notification) {
-        handleNotificationData(notification.request.content.data)
-      }
-    })
+    Notifications.getInitialNotificationAsync()
+      .then((notification) => {
+        if (notification) {
+          handleNotificationData(notification.request.content.data)
+        }
+      })
+      .catch((err) => {
+        console.warn('[NotificationResponder.getInitialNotification]', err)
+      })
 
     return () => {
       subscription.remove()
