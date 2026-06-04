@@ -50,6 +50,10 @@ interface ExpoPushResponse {
 }
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
+const EXPO_BATCH_LIMIT = 100
+
+const chunk = <T>(arr: T[], size: number): T[][] =>
+  Array.from({ length: Math.ceil(arr.length / size) }, (_, i) => arr.slice(i * size, i * size + size))
 
 serve(async (req) => {
   try {
@@ -108,7 +112,7 @@ serve(async (req) => {
 
     const { data: pushTokens } = await supabase
       .from('push_tokens')
-      .select('token, user_id')
+      .select('token')
       .in('user_id', userIdsInRoom)
 
     if (!pushTokens || pushTokens.length === 0) {
@@ -129,21 +133,32 @@ serve(async (req) => {
       },
     }))
 
-    const expoResponse = await fetch(EXPO_PUSH_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(messages),
-    })
+    const chunks = chunk(messages, EXPO_BATCH_LIMIT)
+    const results = await Promise.all(
+      chunks.map(async (batch) => {
+        const resp = await fetch(EXPO_PUSH_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(batch),
+        })
+        if (!resp.ok) {
+          const errorBody = await resp.text()
+          console.error(`[send-promotion] Expo API error ${resp.status}: ${errorBody}`)
+          return { data: batch.map(() => ({ status: 'error' as const, details: { error: 'HTTP_ERROR' } })) }
+        }
+        return resp.json() as Promise<ExpoPushResponse>
+      })
+    )
 
-    const result: ExpoPushResponse = await expoResponse.json()
-
-    // Process errors — remove DeviceNotRegistered tokens
     const tokensToDelete: string[] = []
-    if (result.data) {
-      for (let i = 0; i < result.data.length; i++) {
-        const item = result.data[i]
-        if (item.status === 'error' && item.details?.error === 'DeviceNotRegistered') {
-          tokensToDelete.push(pushTokens[i].token)
+    let allIndex = 0
+    for (const result of results) {
+      if (result.data) {
+        for (const item of result.data) {
+          if (item.status === 'error' && item.details?.error === 'DeviceNotRegistered') {
+            tokensToDelete.push(pushTokens[allIndex].token)
+          }
+          allIndex++
         }
       }
     }
