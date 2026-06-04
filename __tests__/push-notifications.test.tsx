@@ -24,7 +24,7 @@ jest.mock('expo-notifications', () => ({
   requestPermissionsAsync: jest.fn(),
   getExpoPushTokenAsync: jest.fn(),
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
-  getInitialNotificationAsync: jest.fn(() => Promise.resolve(null)),
+  getLastNotificationResponseAsync: jest.fn(() => Promise.resolve(null)),
 }))
 
 jest.mock('expo-device', () => ({

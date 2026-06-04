@@ -55,14 +55,14 @@ const NotificationResponder = () => {
       handleNotificationData(data)
     })
 
-    Notifications.getInitialNotificationAsync()
-      .then((notification) => {
-        if (notification) {
-          handleNotificationData(notification.request.content.data)
+    Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (response) {
+          handleNotificationData(response.notification.request.content.data)
         }
       })
       .catch((err) => {
-        console.warn('[NotificationResponder.getInitialNotification]', err)
+        console.warn('[NotificationResponder.getLastNotificationResponse]', err)
       })
 
     return () => {
