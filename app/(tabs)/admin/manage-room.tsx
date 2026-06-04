@@ -1,36 +1,34 @@
-import { useEffect, useState } from 'react'
 import {
   View, Text, TouchableOpacity, SafeAreaView, FlatList, ActivityIndicator,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
-import { useIdentity } from '@/contexts/IdentityContext'
-import { api } from '@/services'
-import type { Room, Promotion } from '@/lib/types'
+import { useManageRoom } from '@/hooks/useManageRoom'
+import type { Promotion } from '@/lib/types'
+import {
+  ROOM_NOT_FOUND_TITLE,
+  ROOM_CREATE_YOUR_ROOM,
+  PROMOTION_EMPTY_TITLE,
+  PROMOTION_CREATE_YOURS,
+  PROMOTION_TIME_REMAINING,
+  PROMOTION_EXPIRED_LABEL,
+  ADMIN_ACTIVE_PROMOS,
+  ADMIN_EXPIRED_PROMOS,
+  ADMIN_ROOM_RADIUS,
+} from '@/constants/labels'
 import { styles } from './manage-room.styles'
 
+const remainingTime = (promotion: Promotion): string => {
+  const diff = new Date(promotion.ends_at).getTime() - Date.now()
+  if (diff <= 0) return PROMOTION_EXPIRED_LABEL
+  const mins = Math.floor(diff / 60_000)
+  return PROMOTION_TIME_REMAINING(mins)
+}
+
 const ManageRoom = () => {
-  const { userId } = useIdentity()
+  const { room, activePromos, expiredPromos, loading } = useManageRoom()
   const router = useRouter()
-  const [room, setRoom] = useState<Room | null>(null)
-  const [promotions, setPromotions] = useState<Promotion[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!userId) return
-    api.rooms.getByAdmin(userId).then(async (r) => {
-      setRoom(r)
-      if (r) {
-        const promos = await api.promotions.listByRoom(r.id)
-        setPromotions(promos)
-      }
-      setLoading(false)
-    })
-  }, [userId])
-
-  const activePromos = promotions.filter((p) => new Date(p.ends_at) > new Date())
-  const expiredPromos = promotions.filter((p) => new Date(p.ends_at) <= new Date())
 
   if (loading) {
     return (
@@ -43,21 +41,12 @@ const ManageRoom = () => {
   if (!room) {
     return (
       <SafeAreaView style={styles.center}>
-        <Text style={styles.emptyTitle}>No room found</Text>
+        <Text style={styles.emptyTitle}>{ROOM_NOT_FOUND_TITLE}</Text>
         <TouchableOpacity style={styles.createButton} onPress={() => router.replace('/(tabs)/admin/create-room')}>
-          <Text style={styles.createButtonText}>Create your room</Text>
+          <Text style={styles.createButtonText}>{ROOM_CREATE_YOUR_ROOM}</Text>
         </TouchableOpacity>
       </SafeAreaView>
     )
-  }
-
-  const remainingTime = (promotion: Promotion) => {
-    const diff = new Date(promotion.ends_at).getTime() - Date.now()
-    if (diff <= 0) return 'Expired'
-    const mins = Math.floor(diff / 60_000)
-    if (mins < 60) return `${mins}m remaining`
-    const hours = Math.floor(mins / 60)
-    return `${hours}h ${mins % 60}m remaining`
   }
 
   return (
@@ -65,12 +54,12 @@ const ManageRoom = () => {
       <View style={styles.roomInfo}>
         <Text style={styles.roomName}>{room.name}</Text>
         {room.description && <Text style={styles.roomDesc}>{room.description}</Text>}
-        <Text style={styles.roomMeta}>{Math.round(room.radius_meters)}m radius</Text>
+        <Text style={styles.roomMeta}>{ADMIN_ROOM_RADIUS(room.radius_meters)}</Text>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          Active promotions ({activePromos.length})
+          {ADMIN_ACTIVE_PROMOS(activePromos.length)}
         </Text>
       </View>
 
@@ -81,12 +70,12 @@ const ManageRoom = () => {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name="megaphone-outline" size={40} color={Colors.light.textMuted} />
-            <Text style={styles.emptyTitle}>No active promotions</Text>
+            <Text style={styles.emptyTitle}>{PROMOTION_EMPTY_TITLE}</Text>
             <TouchableOpacity
               style={styles.createButton}
               onPress={() => router.push('/(tabs)/admin/create-promotion')}
             >
-              <Text style={styles.createButtonText}>Create promotion</Text>
+              <Text style={styles.createButtonText}>{PROMOTION_CREATE_YOURS}</Text>
             </TouchableOpacity>
           </View>
         }
@@ -101,7 +90,7 @@ const ManageRoom = () => {
 
       {expiredPromos.length > 0 && (
         <View style={styles.expiredSection}>
-          <Text style={styles.sectionTitle}>Expired ({expiredPromos.length})</Text>
+          <Text style={styles.sectionTitle}>{ADMIN_EXPIRED_PROMOS(expiredPromos.length)}</Text>
           {expiredPromos.slice(0, 3).map((item) => (
             <View key={item.id} style={[styles.promoCard, styles.expiredCard]}>
               <Text style={[styles.promoTitle, styles.expiredText]}>{item.title}</Text>
