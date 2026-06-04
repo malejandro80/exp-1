@@ -1,7 +1,16 @@
--- Enable pg_net extension for async HTTP requests (default schema is 'net')
+-- Fix pg_net schema: reinstall without 'with schema extensions' so net.http_post() resolves correctly
+
+-- Drop trigger first
+drop trigger if exists on_promotion_inserted on public.promotions;
+
+-- Drop the trigger function (cascade handles dependencies)
+drop function if exists public.notify_promotion_inserted();
+
+-- Drop and reinstall pg_net in its default 'net' schema
+drop extension if exists pg_net;
 create extension if not exists pg_net;
 
--- Function to call the send-promotion Edge Function when a promotion is inserted
+-- Recreate the trigger function
 create or replace function public.notify_promotion_inserted()
 returns trigger
 language plpgsql
@@ -46,10 +55,7 @@ begin
 end;
 $$;
 
--- Drop existing trigger if re-running
-drop trigger if exists on_promotion_inserted on public.promotions;
-
--- Attach trigger to promotions table
+-- Reattach trigger to promotions table
 create trigger on_promotion_inserted
   after insert on public.promotions
   for each row
