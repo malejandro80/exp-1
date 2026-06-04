@@ -1,10 +1,64 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+interface WebhookPayload {
+  type: string
+  table: string
+  schema: string
+  record: {
+    id: string
+    room_id: string
+    title: string
+    description?: string | null
+  }
+  old_record: null
+}
+
+interface PromotionWithRoom {
+  id: string
+  room_id: string
+  title: string
+  description: string | null
+  rooms: {
+    name: string
+    latitude: number
+    longitude: number
+    radius_meters: number
+  }
+}
+
+interface ExpoPushMessage {
+  to: string
+  sound: string
+  title: string
+  body: string
+  data: {
+    type: string
+    promotion_id: string
+    room_id: string
+  }
+}
+
+interface ExpoPushResponse {
+  data: Array<{
+    status: 'ok' | 'error'
+    message?: string
+    details?: {
+      error: string
+    }
+  }>
+}
+
+const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
+
 serve(async (req) => {
   try {
-    const { promotion_id } = await req.json()
-    if (!promotion_id) {
+    const body: WebhookPayload | { promotion_id: string } = await req.json()
+
+    // Support both webhook format and direct { promotion_id } format
+    const promotionId = 'record' in body ? body.record.id : body.promotion_id
+
+    if (!promotionId) {
       return new Response(JSON.stringify({ error: 'promotion_id required' }), { status: 400 })
     }
 
@@ -16,14 +70,15 @@ serve(async (req) => {
     const { data: promotion, error: promoError } = await supabase
       .from('promotions')
       .select('*, rooms(name, latitude, longitude, radius_meters)')
-      .eq('id', promotion_id)
+      .eq('id', promotionId)
       .single()
 
     if (promoError || !promotion) {
       return new Response(JSON.stringify({ error: 'Promotion not found' }), { status: 404 })
     }
 
-    const room = promotion.rooms as { name: string; latitude: number; longitude: number; radius_meters: number }
+    const typedPromotion = promotion as unknown as PromotionWithRoom
+    const room = typedPromotion.rooms
     const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString()
 
     const { data: profiles } = await supabase
@@ -53,34 +108,57 @@ serve(async (req) => {
 
     const { data: pushTokens } = await supabase
       .from('push_tokens')
-      .select('token')
+      .select('token, user_id')
       .in('user_id', userIdsInRoom)
 
     if (!pushTokens || pushTokens.length === 0) {
       return new Response(JSON.stringify({ sent: 0 }), { status: 200 })
     }
 
-    const messages = pushTokens.map((t: { token: string }) => ({
+    const bodyText = typedPromotion.description || `New promotion at ${room.name}!`
+
+    const messages: ExpoPushMessage[] = pushTokens.map((t) => ({
       to: t.token,
-      title: `🎉 ${promotion.title}`,
-      body: promotion.description || `New promotion at ${room.name}!`,
+      sound: 'default',
+      title: typedPromotion.title,
+      body: bodyText,
       data: {
         type: 'promotion',
-        promotion_id: promotion.id,
-        room_id: promotion.room_id,
+        promotion_id: typedPromotion.id,
+        room_id: typedPromotion.room_id,
       },
     }))
 
-    const expoResponse = await fetch('https://exp.host/--/api/v2/push/send', {
+    const expoResponse = await fetch(EXPO_PUSH_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(messages),
     })
 
-    const result = await expoResponse.json()
+    const result: ExpoPushResponse = await expoResponse.json()
 
-    return new Response(JSON.stringify({ sent: messages.length, result }), { status: 200 })
+    // Process errors — remove DeviceNotRegistered tokens
+    const tokensToDelete: string[] = []
+    if (result.data) {
+      for (let i = 0; i < result.data.length; i++) {
+        const item = result.data[i]
+        if (item.status === 'error' && item.details?.error === 'DeviceNotRegistered') {
+          tokensToDelete.push(pushTokens[i].token)
+        }
+      }
+    }
+
+    if (tokensToDelete.length > 0) {
+      console.log(`[send-promotion] Removing ${tokensToDelete.length} invalid tokens`)
+      await supabase
+        .from('push_tokens')
+        .delete()
+        .in('token', tokensToDelete)
+    }
+
+    return new Response(JSON.stringify({ sent: messages.length, errors: tokensToDelete.length }), { status: 200 })
   } catch (err) {
+    console.error('[send-promotion] Unexpected error:', err)
     return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500 })
   }
 })
