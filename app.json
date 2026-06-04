@@ -29,10 +29,6 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "config": {
@@ -40,6 +36,7 @@
           "apiKey": "AIzaSyDmlZ9bINzrxb17DX27_je3DTYlHYJkWtc"
         }
       },
+      "googleServicesFile": "./google-services.json",
       "package": "com.anonymous.nearby"
     },
     "web": {
@@ -67,11 +64,19 @@
         }
       ],
       "expo-web-browser",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": false,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "665f946c-8175-44e2-a0b1-6191a5e60f07"
+      }
+    },
+    "owner": "malejandro80"
   }
 }

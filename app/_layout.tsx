@@ -4,15 +4,17 @@ import { Stack, router } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import * as Font from 'expo-font'
 import * as Notifications from 'expo-notifications'
-import * as Device from 'expo-device'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
-import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { AuthProvider } from '@/contexts/AuthContext'
 import { IdentityProvider } from '@/contexts/IdentityContext'
 import { styles } from './_layout.styles'
 import { LocationProvider } from '@/contexts/LocationContext'
 import { RoomProvider } from '@/contexts/RoomContext'
-import { api } from '@/services'
+import { usePushTokenRegister } from '@/hooks/usePushTokenRegister'
+
+const queryClient = new QueryClient()
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -24,27 +26,8 @@ Notifications.setNotificationHandler({
   }),
 })
 
-const PushTokenRegister = () => {
-  const { user } = useAuth()
-  const userId = user?.id
-
-  useEffect(() => {
-    if (!userId) return
-    const register = async () => {
-      if (!Device.isDevice) return
-      const { status: existingStatus } = await Notifications.getPermissionsAsync()
-      let finalStatus = existingStatus
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync()
-        finalStatus = status
-      }
-      if (finalStatus !== 'granted') return
-      const tokenData = await Notifications.getExpoPushTokenAsync()
-      await api.pushTokens.upsert(userId, tokenData.data)
-    }
-    register()
-  }, [userId])
-
+const PushTokenRegisterWrapper = () => {
+  usePushTokenRegister()
   return null
 }
 
@@ -114,18 +97,20 @@ const RootLayout = () => {
   }
 
   return (
-    <AuthProvider>
-      <IdentityProvider>
-        <LocationProvider>
-          <RoomProvider>
-            <NotificationResponder />
-            <PushTokenRegister />
-            <RootScreens />
-            <StatusBar style="auto" />
-          </RoomProvider>
-        </LocationProvider>
-      </IdentityProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <IdentityProvider>
+          <LocationProvider>
+            <RoomProvider>
+              <NotificationResponder />
+              <PushTokenRegisterWrapper />
+              <RootScreens />
+              <StatusBar style="auto" />
+            </RoomProvider>
+          </LocationProvider>
+        </IdentityProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }
 
